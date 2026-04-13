@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>CogniHire — My Results</title>
+  <script>
+    if (!localStorage.getItem('cognihire_token')) { window.location.replace('/login.html'); }
+  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Manrope:wght@500;600;700;800&display=swap" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/>
+  <style>
+    :root{--primary:#00425e;--secondary:#006a6a;--surface:#f8f9fd;--surface-container-low:#f2f4f7;--surface-container:#eceef1;--on-surface:#191c1e;--on-surface-variant:#40484e;--outline-variant:#c0c7ce;--primary-fixed:#c6e7ff;}
+    *{box-sizing:border-box;margin:0;padding:0;}
+    body{font-family:'Inter',sans-serif;background:#f8f9fd;color:#191c1e;min-height:100vh;}
+    a{text-decoration:none;color:inherit;}
+
+    /* ── Top nav ── */
+    .topnav{position:fixed;top:0;left:0;right:0;z-index:1000;background:rgba(255,255,255,0.92);backdrop-filter:blur(20px);border-bottom:1px solid rgba(192,199,206,0.3);height:64px;display:flex;align-items:center;justify-content:space-between;padding:0 1.5rem;box-shadow:0 1px 3px rgba(0,0,0,0.06);}
+    .topnav-brand{font-family:Manrope,sans-serif;font-size:1.125rem;font-weight:800;color:#00425e;letter-spacing:-0.03em;}
+    .topnav-actions{display:flex;align-items:center;gap:1rem;}
+    .avatar-circle{width:32px;height:32px;border-radius:50%;background:#00425e;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:#fff;cursor:pointer;}
+
+    /* ── Sidebar ── */
+    .sidebar{position:fixed;left:0;top:0;height:100vh;width:256px;background:#f8fafc;border-right:1px solid #e2e8f0;padding-top:80px;padding-bottom:2rem;display:flex;flex-direction:column;z-index:999;}
+    .sidebar-nav{flex:1;display:flex;flex-direction:column;gap:2px;}
+    .nav-item{display:flex;align-items:center;gap:0.75rem;padding:0.625rem 1.5rem;font-family:Manrope,sans-serif;font-size:13px;font-weight:600;color:#40484e;transition:background 0.15s,color 0.15s;border-right:3px solid transparent;}
+    .nav-item:hover{background:#eef2f5;color:#00425e;}
+    .nav-item.active{background:#ffffff;color:#00425e;border-right:3px solid #00425e;}
+    .nav-item .material-symbols-outlined{font-size:1.25rem;}
+    .sidebar-footer{border-top:1px solid #e2e8f0;padding:1rem 1.5rem 0;}
+    .sidebar-footer a{display:flex;align-items:center;gap:0.75rem;padding:0.5rem 0;color:#40484e;font-family:Manrope,sans-serif;font-size:13px;font-weight:600;}
+
+    /* ── Main ── */
+    .main{margin-left:256px;padding-top:80px;padding-right:2.5rem;padding-left:2rem;padding-bottom:5rem;}
+    .page-header{margin-bottom:2rem;}
+    .page-title{font-family:Manrope,sans-serif;font-size:1.75rem;font-weight:800;color:#191c1e;letter-spacing:-0.03em;}
+    .page-subtitle{color:#40484e;font-size:0.9rem;margin-top:0.25rem;}
+
+    /* ── Summary cards ── */
+    .summary-cards{display:grid;grid-template-columns:repeat(3,1fr);gap:1.25rem;margin-bottom:2rem;}
+    .summary-card{background:#fff;border:1px solid #e2e8f0;border-radius:16px;padding:1.5rem;display:flex;flex-direction:column;gap:0.25rem;}
+    .summary-card-label{font-size:0.8rem;font-weight:600;color:#40484e;text-transform:uppercase;letter-spacing:0.05em;}
+    .summary-card-value{font-family:Manrope,sans-serif;font-size:2.25rem;font-weight:800;color:#00425e;}
+    .summary-card-sub{font-size:0.8rem;color:#64748b;}
+
+    /* ── Grid: chart + list ── */
+    .content-grid{display:grid;grid-template-columns:360px 1fr;gap:1.5rem;align-items:start;}
+    .chart-card{background:#fff;border:1px solid #e2e8f0;border-radius:16px;padding:1.5rem;}
+    .chart-title{font-family:Manrope,sans-serif;font-size:1rem;font-weight:700;color:#191c1e;margin-bottom:1.25rem;}
+    .chart-wrap{position:relative;width:100%;max-width:300px;margin:0 auto;}
+
+    /* ── Attempt cards ── */
+    .attempt-card{background:#fff;border:1px solid #e2e8f0;border-radius:12px;margin-bottom:0.75rem;overflow:hidden;}
+    .attempt-header{display:flex;align-items:center;justify-content:space-between;padding:1rem 1.25rem;cursor:pointer;user-select:none;transition:background 0.15s;}
+    .attempt-header:hover{background:#f8fafc;}
+    .attempt-meta{display:flex;flex-direction:column;gap:0.25rem;}
+    .attempt-label{font-family:Manrope,sans-serif;font-size:0.9rem;font-weight:700;color:#191c1e;display:flex;align-items:center;gap:0.5rem;}
+    .attempt-date{font-size:0.78rem;color:#64748b;}
+    .attempt-right{display:flex;align-items:center;gap:0.75rem;}
+    .readiness-score{font-family:Manrope,sans-serif;font-size:1.25rem;font-weight:800;}
+    .score-high{color:#1a7f5a;}
+    .score-mid{color:#b45309;}
+    .score-low{color:#b91c1c;}
+    .expand-icon{color:#40484e;font-size:1.25rem;transition:transform 0.2s;}
+    .badge-latest{background:#00425e;color:#fff;font-size:0.65rem;padding:2px 6px;border-radius:6px;font-weight:700;letter-spacing:0.03em;}
+
+    /* ── Ability grid ── */
+    .attempt-body{padding:1.25rem;border-top:1px solid #eceef1;background:#fafbfc;}
+    .ability-grid{display:grid;grid-template-columns:1fr 1fr;gap:0.75rem;}
+    .ability-item{display:flex;flex-direction:column;gap:4px;}
+    .ability-name{font-size:0.78rem;font-weight:600;color:#40484e;}
+    .ability-bar-wrap{height:6px;background:#e2e8f0;border-radius:4px;overflow:hidden;}
+    .ability-bar{height:100%;border-radius:4px;transition:width 0.4s ease;}
+    .ability-pct{font-family:Manrope,sans-serif;font-size:0.8rem;font-weight:700;}
+
+    /* ── Empty / error states ── */
+    .empty-state{text-align:center;padding:4rem 2rem;color:#64748b;}
+    .empty-icon{font-size:3rem;color:#c0c7ce;margin-bottom:1rem;}
+    .empty-title{font-family:Manrope,sans-serif;font-size:1.125rem;font-weight:700;margin-bottom:0.5rem;color:#40484e;}
+    .empty-cta{display:inline-block;margin-top:1.25rem;background:#00425e;color:#fff;padding:0.625rem 1.5rem;border-radius:8px;font-weight:600;font-size:0.875rem;}
+    .error-msg{color:#b91c1c;font-size:0.9rem;}
+  </style>
+</head>
+<body>
+
+  <!-- Top Nav -->
+  <header class="topnav">
+    <span class="topnav-brand">CogniHire</span>
+    <div class="topnav-actions">
+      <div class="avatar-circle" id="avatar-initials">?</div>
+    </div>
+  </header>
+
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div style="padding:0 1.5rem 1rem;border-bottom:1px solid #e2e8f0;">
+      <p style="font-size:11px;font-weight:600;color:#94a3b8;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:0.5rem;">Menu</p>
+    </div>
+    <nav class="sidebar-nav">
+      <a href="/" class="nav-item">
+        <span class="material-symbols-outlined">dashboard</span>Dashboard
+      </a>
+      <a href="/assessments.html" class="nav-item">
+        <span class="material-symbols-outlined">psychology</span>Assessments
+      </a>
+      <a href="/results.html" class="nav-item active">
+        <span class="material-symbols-outlined">bar_chart</span>My Results
+      </a>
+      <a href="/resume.html" class="nav-item">
+        <span class="material-symbols-outlined">description</span>Resume
+      </a>
+      <a href="/jobs.html" class="nav-item">
+        <span class="material-symbols-outlined">work_outline</span>Jobs
+      </a>
+      <a href="/coming-soon.html" class="nav-item">
+        <span class="material-symbols-outlined">record_voice_over</span>Interview
+      </a>
+      <a href="/skills.html" class="nav-item">
+        <span class="material-symbols-outlined">auto_stories</span>Skills
+      </a>
+    </nav>
+    <div class="sidebar-footer">
+      <a href="#"><span class="material-symbols-outlined">settings</span>Settings</a>
+      <a href="#"><span class="material-symbols-outlined">contact_support</span>Support</a>
+    </div>
+  </aside>
+
+  <!-- Main Content -->
+  <main class="main">
+    <div class="page-header">
+      <h1 class="page-title">My Assessment Results</h1>
+      <p class="page-subtitle">Track your cognitive ability scores across all attempts.</p>
+    </div>
+
+    <!-- Empty state (hidden when data exists) -->
+    <div id="empty-state" class="empty-state" style="display:none;">
+      <div class="empty-icon"><span class="material-symbols-outlined" style="font-size:3rem;">psychology</span></div>
+      <div class="empty-title">No assessments taken yet</div>
+      <p>Complete your first cognitive assessment to see your results here.</p>
+      <a href="/assessments.html" class="empty-cta">Take Assessment</a>
+    </div>
+
+    <!-- Summary + history (hidden until data loads) -->
+    <div id="summary-section" style="display:none;">
+      <!-- Summary cards -->
+      <div class="summary-cards">
+        <div class="summary-card">
+          <div class="summary-card-label">Latest Readiness Score</div>
+          <div class="summary-card-value" id="latest-score">—</div>
+          <div class="summary-card-sub">Overall cognitive readiness</div>
+        </div>
+        <div class="summary-card">
+          <div class="summary-card-label">Attempts Taken</div>
+          <div class="summary-card-value" id="attempt-count">—</div>
+          <div class="summary-card-sub">Total assessments completed</div>
+        </div>
+        <div class="summary-card">
+          <div class="summary-card-label">Score Change</div>
+          <div class="summary-card-value" id="improvement-val">—</div>
+          <div class="summary-card-sub">First vs. latest attempt</div>
+        </div>
+      </div>
+
+      <!-- Chart + history list -->
+      <div class="content-grid">
+        <!-- Radar chart -->
+        <div class="chart-card">
+          <div class="chart-title">Latest Ability Profile</div>
+          <div class="chart-wrap">
+            <canvas id="radar-chart"></canvas>
+          </div>
+          <div style="margin-top:1.25rem;text-align:center;">
+            <a href="/assessments.html" style="display:inline-block;background:#00425e;color:#fff;padding:0.5rem 1.25rem;border-radius:8px;font-weight:600;font-size:0.8rem;">Retake Assessment</a>
+          </div>
+        </div>
+
+        <!-- Attempt history list -->
+        <div>
+          <div style="font-family:Manrope,sans-serif;font-size:1rem;font-weight:700;color:#191c1e;margin-bottom:1rem;">Attempt History</div>
+          <div id="history-container">
+            <p style="color:#64748b;font-size:0.9rem;">Loading...</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <script type="module">
+    import { getUserId } from './js/api.js';
+    const uid = getUserId();
+    if (uid) {
+      const el = document.getElementById('avatar-initials');
+      el.textContent = uid.slice(0, 2).toUpperCase();
+    }
+  </script>
+  <script type="module" src="./js/results.js"></script>
+</body>
+</html>

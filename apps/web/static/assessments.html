@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>CogniHire — Cognitive Assessment Center</title>
+  <script>
+    if (!localStorage.getItem('cognihire_token')) { window.location.replace('/login.html'); }
+  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Manrope:wght@500;600;700;800&display=swap" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/>
+  <style>
+    :root{--primary:#00425e;--secondary:#006a6a;--surface:#f8f9fd;--surface-container-low:#f2f4f7;--surface-container:#eceef1;--on-surface:#191c1e;--on-surface-variant:#40484e;--outline-variant:#c0c7ce;--primary-fixed:#c6e7ff;}
+    *{box-sizing:border-box;margin:0;padding:0;}
+    body{font-family:'Inter',sans-serif;background:#f8f9fd;color:#191c1e;min-height:100vh;}
+    a{text-decoration:none;color:inherit;}
+    .topnav{position:fixed;top:0;left:0;right:0;z-index:1000;background:rgba(255,255,255,0.92);backdrop-filter:blur(20px);border-bottom:1px solid rgba(192,199,206,0.3);height:64px;display:flex;align-items:center;justify-content:space-between;padding:0 1.5rem;box-shadow:0 1px 3px rgba(0,0,0,0.06);}
+    .topnav-brand{font-family:Manrope,sans-serif;font-size:1.125rem;font-weight:800;color:#00425e;letter-spacing:-0.03em;}
+    .topnav-actions{display:flex;align-items:center;gap:1rem;}
+    .avatar-circle{width:32px;height:32px;border-radius:50%;background:#00425e;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:#fff;cursor:pointer;}
+    .sidebar{position:fixed;left:0;top:0;height:100vh;width:256px;background:#f8fafc;border-right:1px solid #e2e8f0;padding-top:80px;padding-bottom:2rem;display:flex;flex-direction:column;z-index:999;}
+    .sidebar-nav{flex:1;display:flex;flex-direction:column;gap:2px;}
+    .nav-item{display:flex;align-items:center;gap:0.75rem;padding:0.625rem 1.5rem;font-family:Manrope,sans-serif;font-size:13px;font-weight:600;color:#40484e;transition:background 0.15s,color 0.15s;border-right:3px solid transparent;}
+    .nav-item:hover{background:#eef2f5;color:#00425e;}
+    .nav-item.active{background:#ffffff;color:#00425e;border-right:3px solid #00425e;}
+    .nav-item .material-symbols-outlined{font-size:1.25rem;}
+    .sidebar-footer{border-top:1px solid #e2e8f0;padding:1rem 1.5rem 0;}
+    .sidebar-footer a{display:flex;align-items:center;gap:0.75rem;padding:0.5rem 0;color:#40484e;font-family:Manrope,sans-serif;font-size:13px;font-weight:600;}
+    .main{margin-left:256px;padding-top:80px;padding-right:2.5rem;padding-left:2rem;padding-bottom:5rem;}
+    .card{background:#ffffff;border-radius:12px;padding:1.25rem 1.5rem;margin-bottom:0.75rem;border:1px solid #eceef1;box-shadow:0 1px 3px rgba(0,0,0,0.04);}
+    .section-label{font-family:Manrope,sans-serif;font-size:0.6875rem;text-transform:uppercase;letter-spacing:0.18em;font-weight:700;color:#40484e;margin:2rem 0 1rem;display:block;}
+    .grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:1rem;}
+    @media(max-width:900px){.grid-3{grid-template-columns:1fr;}.sidebar{display:none;}.main{margin-left:0;}}
+  </style>
+</head>
+<body>
+  <!-- Top Nav -->
+  <nav class="topnav">
+    <div class="topnav-brand">CogniHire</div>
+    <div class="topnav-actions">
+      <span class="material-symbols-outlined" style="color:#40484e;cursor:pointer;font-size:1.25rem;">notifications</span>
+      <span class="material-symbols-outlined" style="color:#40484e;cursor:pointer;font-size:1.25rem;">help_outline</span>
+      <div style="display:flex;align-items:center;gap:0.75rem;">
+        <span id="nav-user-name" style="font-size:13px;font-weight:600;color:#40484e;"></span>
+        <div class="avatar-circle" data-logout title="Click to sign out">
+          <span id="nav-user-initials">?</span>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div style="padding:0 1.5rem 1rem;">
+      <div style="font-family:Manrope,sans-serif;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.15em;color:#70787e;">Workspace</div>
+      <div style="font-size:11px;color:#40484e;margin-top:2px;font-family:Inter,sans-serif;">Interview Intelligence</div>
+    </div>
+    <nav class="sidebar-nav">
+      <a href="/" class="nav-item">
+        <span class="material-symbols-outlined">dashboard</span>Dashboard
+      </a>
+      <a href="/assessments.html" class="nav-item active">
+        <span class="material-symbols-outlined">psychology</span>Assessments
+      </a>
+      <a href="/resume.html" class="nav-item">
+        <span class="material-symbols-outlined">description</span>Resume
+      </a>
+      <a href="/jobs.html" class="nav-item">
+        <span class="material-symbols-outlined">work_outline</span>Jobs
+      </a>
+      <a href="/coming-soon.html" class="nav-item">
+        <span class="material-symbols-outlined">record_voice_over</span>Interview
+      </a>
+      <a href="/skills.html" class="nav-item">
+        <span class="material-symbols-outlined">auto_stories</span>Skills
+      </a>
+      <a href="/history.html" class="nav-item">
+        <span class="material-symbols-outlined">history</span>History
+      </a>
+    </nav>
+    <div class="sidebar-footer">
+      <a href="#"><span class="material-symbols-outlined">settings</span>Settings</a>
+      <a href="#"><span class="material-symbols-outlined">contact_support</span>Support</a>
+    </div>
+  </aside>
+
+  <!-- Main Content -->
+  <main class="main">
+    <!-- Header -->
+    <div class="card" style="margin-bottom:1.5rem;">
+      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:1rem;">
+        <div>
+          <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.15em;color:#40484e;margin-bottom:0.25rem;">Cognitive Assessment Center</div>
+          <h1 style="font-family:Manrope,sans-serif;font-size:1.5rem;font-weight:800;color:#191c1e;">Test Your Cognitive Abilities</h1>
+          <p style="font-size:0.875rem;color:#40484e;margin-top:0.5rem;">18 tasks across 9 cognitive abilities. Takes about 10&ndash;15 minutes.</p>
+        </div>
+        <div style="text-align:right;">
+          <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:#40484e;">Progress</div>
+          <div style="font-family:Manrope,sans-serif;font-size:1.5rem;font-weight:800;color:#00425e;" id="assessment-progress">0 / 0</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tasks Grid -->
+    <span class="section-label">Assessment Tasks</span>
+    <div class="grid-3" id="tasks-grid">
+      <div class="card" style="grid-column:1/-1;text-align:center;padding:2.5rem;">
+        <span class="material-symbols-outlined" style="font-size:3rem;color:#c0c7ce;">psychology</span>
+        <h2 style="font-family:Manrope,sans-serif;font-size:1.25rem;font-weight:700;color:#191c1e;margin:0.75rem 0 0.5rem;">Ready to Begin?</h2>
+        <p style="font-size:0.9375rem;color:#40484e;margin-bottom:1.5rem;">Click the button below to load your assessment tasks.</p>
+        <button onclick="loadAndStartAssessment()"
+                style="background:#00425e;color:#fff;border:none;border-radius:8px;padding:0.75rem 1.75rem;font-weight:700;font-size:14px;cursor:pointer;">
+          Start Assessment
+        </button>
+      </div>
+    </div>
+  </main>
+
+  <!-- Task Modal -->
+  <div id="task-modal" style="display:none;" class="fixed inset-0 z-[999]"
+       style="position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:999;display:none;align-items:center;justify-content:center;padding:1rem;">
+    <div style="background:#ffffff;border-radius:16px;padding:2rem;max-width:600px;width:100%;box-shadow:0 20px 60px rgba(0,0,0,0.15);max-height:90vh;overflow-y:auto;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem;">
+        <span id="modal-ability" style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.15em;color:#40484e;"></span>
+        <span id="modal-progress" style="font-size:11px;font-weight:600;color:#40484e;"></span>
+      </div>
+      <h2 id="modal-question" style="font-size:1.125rem;font-family:Manrope,sans-serif;font-weight:700;color:#191c1e;margin-bottom:1.5rem;line-height:1.5;"></h2>
+      <div id="modal-options" style="margin-bottom:1rem;"></div>
+      <div id="modal-input" style="display:none;margin-bottom:1rem;">
+        <input id="modal-answer-input" type="number" placeholder="Enter your answer"
+               style="width:100%;background:#f2f4f7;border:1px solid #c0c7ce;border-radius:10px;padding:1rem;font-size:1.125rem;font-weight:700;color:#191c1e;outline:none;box-sizing:border-box;"/>
+        <button onclick="submitAnswer(document.getElementById('modal-answer-input').value)"
+                style="width:100%;margin-top:0.75rem;background:#00425e;color:#fff;border:none;border-radius:10px;padding:0.75rem;font-weight:700;font-size:0.9375rem;cursor:pointer;">
+          Submit Answer
+        </button>
+      </div>
+      <div id="modal-timer" style="text-align:center;font-size:11px;color:#40484e;"></div>
+    </div>
+  </div>
+
+  <script src="/js/api.js"></script>
+  <script src="/js/assessments.js"></script>
+  <script>
+    // Fix modal display style conflict
+    document.addEventListener('DOMContentLoaded', () => {
+      requireAuth();
+      populateNavUser();
+      const modal = document.getElementById('task-modal');
+      if (modal) {
+        // Override the style attribute that was set inline
+        const origStart = startTask;
+        window.startTask = function(index) {
+          modal.style.cssText = 'display:flex;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:999;align-items:center;justify-content:center;padding:1rem;';
+          return origStart(index);
+        };
+        const origClose = closeModal;
+        window.closeModal = function() {
+          modal.style.display = 'none';
+          return origClose();
+        };
+      }
+    });
+  </script>
+</body>
+</html>

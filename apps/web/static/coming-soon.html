@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <title>Coming Soon | Cognitive Architect</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Manrope:wght@500;600;700;800&display=swap" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+  <script>tailwind.config={theme:{extend:{fontFamily:{headline:["Manrope"],body:["Inter"]},colors:{primary:"#00425e",secondary:"#006a6a"}}}}</script>
+  <style>.material-symbols-outlined{font-variation-settings:'FILL' 0,'wght' 400,'GRAD' 0,'opsz' 24;vertical-align:middle;}</style>
+</head>
+<body class="bg-slate-50 font-body min-h-screen flex items-center justify-center p-6">
+  <div class="fixed top-0 right-0 w-96 h-96 bg-cyan-100/30 rounded-full blur-3xl -z-10"></div>
+  <div class="max-w-lg w-full text-center">
+    <div class="w-20 h-20 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-6">
+      <span class="material-symbols-outlined text-primary text-4xl">construction</span>
+    </div>
+    <h1 class="font-headline text-3xl font-extrabold text-primary mb-3">Feature In Progress</h1>
+    <p class="text-slate-500 text-base leading-relaxed mb-8">
+      This feature is currently being built. Our team is working hard to bring you a powerful experience.
+    </p>
+    <div class="bg-white rounded-2xl p-6 border border-slate-100 shadow-sm mb-8 text-left space-y-4">
+      <h3 class="font-headline font-bold text-primary text-sm uppercase tracking-widest">On the Roadmap</h3>
+      <div class="flex items-start gap-3">
+        <span class="material-symbols-outlined text-secondary text-base mt-0.5">record_voice_over</span>
+        <div><p class="font-semibold text-slate-800 text-sm">AI Interview Simulator</p><p class="text-slate-400 text-xs">Real-time behavioral feedback with RAG-powered coaching</p></div>
+      </div>
+      <div class="flex items-start gap-3">
+        <span class="material-symbols-outlined text-secondary text-base mt-0.5">insights</span>
+        <div><p class="font-semibold text-slate-800 text-sm">Explainability Dashboard</p><p class="text-slate-400 text-xs">SHAP-based explanations for every recommendation</p></div>
+      </div>
+      <div class="flex items-start gap-3">
+        <span class="material-symbols-outlined text-secondary text-base mt-0.5">hub</span>
+        <div><p class="font-semibold text-slate-800 text-sm">Career Visualization Map</p><p class="text-slate-400 text-xs">Interactive 2D cluster map of all career paths</p></div>
+      </div>
+    </div>
+    <div class="flex gap-3 justify-center">
+      <a href="/" class="px-6 py-3 bg-primary text-white rounded-xl font-bold text-sm hover:bg-[#005b7f] transition-colors">Go to Dashboard</a>
+      <button onclick="history.back()" class="px-6 py-3 bg-slate-100 text-slate-700 rounded-xl font-bold text-sm hover:bg-slate-200 transition-colors">Go Back</button>
+    </div>
+  </div>
+</body>
+</html>

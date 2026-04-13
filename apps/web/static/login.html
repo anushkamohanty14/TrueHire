@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Sign In | Cognitive Architect</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Manrope:wght@500;600;700;800&display=swap" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+  <script>
+    tailwind.config = {
+      theme: { extend: { fontFamily: { headline: ["Manrope"], body: ["Inter"] }, colors: { primary: "#00425e", secondary: "#006a6a" } } }
+    }
+  </script>
+  <style>
+    .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; vertical-align: middle; }
+  </style>
+</head>
+<body class="bg-slate-50 font-body min-h-screen flex items-center justify-center p-4">
+  <!-- Decorative blobs -->
+  <div class="fixed top-0 right-0 w-96 h-96 bg-cyan-100/40 rounded-full blur-3xl -z-10"></div>
+  <div class="fixed bottom-0 left-0 w-64 h-64 bg-teal-100/30 rounded-full blur-3xl -z-10"></div>
+
+  <div class="w-full max-w-md">
+    <!-- Brand -->
+    <div class="text-center mb-8">
+      <div class="inline-flex items-center justify-center w-14 h-14 bg-primary rounded-2xl mb-4 shadow-lg shadow-primary/20">
+        <span class="material-symbols-outlined text-white text-3xl">psychology</span>
+      </div>
+      <h1 class="font-headline text-2xl font-extrabold text-primary tracking-tight">Cognitive Architect</h1>
+      <p class="text-slate-500 text-sm mt-1">Your AI-powered career intelligence platform</p>
+    </div>
+
+    <!-- Card -->
+    <div class="bg-white rounded-2xl shadow-xl shadow-slate-200/60 p-8 border border-slate-100">
+      <!-- Tab toggle -->
+      <div class="flex gap-1 p-1 bg-slate-100 rounded-xl mb-8">
+        <button id="tab-login" onclick="showTab('login')" class="flex-1 py-2 rounded-lg text-sm font-bold bg-white shadow-sm text-primary transition-all">Sign In</button>
+        <button id="tab-signup" onclick="showTab('signup')" class="flex-1 py-2 rounded-lg text-sm font-bold text-slate-500 transition-all">Create Account</button>
+      </div>
+
+      <!-- Login Form -->
+      <form id="form-login" onsubmit="handleLogin(event)" class="space-y-4">
+        <div>
+          <label class="block text-xs font-bold uppercase tracking-widest text-slate-400 mb-2">Username</label>
+          <div class="flex items-center bg-slate-50 rounded-xl border border-slate-200 px-4 py-3 gap-3 focus-within:border-primary transition-colors">
+            <span class="material-symbols-outlined text-slate-400 text-lg">person</span>
+            <input id="login-username" type="text" placeholder="your_username" required autocomplete="username"
+                   class="flex-1 bg-transparent border-none focus:ring-0 text-sm font-medium text-slate-800 placeholder:text-slate-400" style="outline:none;"/>
+          </div>
+        </div>
+        <div>
+          <label class="block text-xs font-bold uppercase tracking-widest text-slate-400 mb-2">Password</label>
+          <div class="flex items-center bg-slate-50 rounded-xl border border-slate-200 px-4 py-3 gap-3 focus-within:border-primary transition-colors">
+            <span class="material-symbols-outlined text-slate-400 text-lg">lock</span>
+            <input id="login-password" type="password" placeholder="••••••••" required autocomplete="current-password"
+                   class="flex-1 bg-transparent border-none focus:ring-0 text-sm font-medium text-slate-800 placeholder:text-slate-400" style="outline:none;"/>
+          </div>
+        </div>
+        <div id="login-error" class="text-red-500 text-xs font-semibold hidden"></div>
+        <button type="submit" id="login-btn"
+                class="w-full bg-primary text-white py-3 rounded-xl font-headline font-bold text-sm hover:bg-[#005b7f] active:scale-95 transition-all shadow-lg shadow-primary/20 mt-2">
+          Sign In
+        </button>
+      </form>
+
+      <!-- Signup Form -->
+      <form id="form-signup" onsubmit="handleSignup(event)" class="space-y-4 hidden">
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <label class="block text-xs font-bold uppercase tracking-widest text-slate-400 mb-2">Full Name</label>
+            <input id="signup-name" type="text" placeholder="Alex Thompson" required
+                   class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-medium focus:border-primary focus:ring-0 focus:outline-none transition-colors"/>
+          </div>
+          <div>
+            <label class="block text-xs font-bold uppercase tracking-widest text-slate-400 mb-2">Username</label>
+            <input id="signup-username" type="text" placeholder="alex_t" required autocomplete="username"
+                   class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-medium focus:border-primary focus:ring-0 focus:outline-none transition-colors"/>
+          </div>
+        </div>
+        <div>
+          <label class="block text-xs font-bold uppercase tracking-widest text-slate-400 mb-2">Email</label>
+          <input id="signup-email" type="email" placeholder="alex@example.com" required
+                 class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-medium focus:border-primary focus:ring-0 focus:outline-none transition-colors"/>
+        </div>
+        <div>
+          <label class="block text-xs font-bold uppercase tracking-widest text-slate-400 mb-2">Password</label>
+          <input id="signup-password" type="password" placeholder="Min. 8 characters" required minlength="8"
+                 class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-medium focus:border-primary focus:ring-0 focus:outline-none transition-colors"/>
+        </div>
+        <div id="signup-error" class="text-red-500 text-xs font-semibold hidden"></div>
+        <button type="submit" id="signup-btn"
+                class="w-full bg-primary text-white py-3 rounded-xl font-headline font-bold text-sm hover:bg-[#005b7f] active:scale-95 transition-all shadow-lg shadow-primary/20 mt-2">
+          Create Account
+        </button>
+      </form>
+    </div>
+
+    <p class="text-center text-xs text-slate-400 mt-6">
+      CogniHire &middot; Powered by O*NET &amp; NCPT cognitive science
+    </p>
+  </div>
+
+  <script src="/js/api.js"></script>
+  <script>
+    // Redirect if already logged in
+    if (localStorage.getItem('cognihire_token')) {
+      window.location.href = '/';
+    }
+
+    function showTab(tab) {
+      const isLogin = tab === 'login';
+      document.getElementById('form-login').classList.toggle('hidden', !isLogin);
+      document.getElementById('form-signup').classList.toggle('hidden', isLogin);
+      document.getElementById('tab-login').className = `flex-1 py-2 rounded-lg text-sm font-bold transition-all ${isLogin ? 'bg-white shadow-sm text-primary' : 'text-slate-500'}`;
+      document.getElementById('tab-signup').className = `flex-1 py-2 rounded-lg text-sm font-bold transition-all ${!isLogin ? 'bg-white shadow-sm text-primary' : 'text-slate-500'}`;
+    }
+
+    async function handleLogin(e) {
+      e.preventDefault();
+      const btn = document.getElementById('login-btn');
+      const err = document.getElementById('login-error');
+      btn.textContent = 'Signing in\u2026'; btn.disabled = true; err.classList.add('hidden');
+      try {
+        const data = await apiPost('/auth/login', {
+          username: document.getElementById('login-username').value,
+          password: document.getElementById('login-password').value,
+        });
+        localStorage.setItem('cognihire_token', data.token);
+        localStorage.setItem('cognihire_user_id', data.user_id);
+        localStorage.setItem('cognihire_full_name', data.full_name);
+        window.location.href = '/';
+      } catch(ex) {
+        err.textContent = ex.message; err.classList.remove('hidden');
+        btn.textContent = 'Sign In'; btn.disabled = false;
+      }
+    }
+
+    async function handleSignup(e) {
+      e.preventDefault();
+      const btn = document.getElementById('signup-btn');
+      const err = document.getElementById('signup-error');
+      btn.textContent = 'Creating account\u2026'; btn.disabled = true; err.classList.add('hidden');
+      try {
+        const data = await apiPost('/auth/signup', {
+          username: document.getElementById('signup-username').value,
+          email: document.getElementById('signup-email').value,
+          password: document.getElementById('signup-password').value,
+          full_name: document.getElementById('signup-name').value,
+        });
+        localStorage.setItem('cognihire_token', data.token);
+        localStorage.setItem('cognihire_user_id', data.user_id);
+        localStorage.setItem('cognihire_full_name', data.full_name);
+        window.location.href = '/';
+      } catch(ex) {
+        err.textContent = ex.message; err.classList.remove('hidden');
+        btn.textContent = 'Create Account'; btn.disabled = false;
+      }
+    }
+  </script>
+</body>
+</html>

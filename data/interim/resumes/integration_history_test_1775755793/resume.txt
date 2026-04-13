@@ -1,0 +1,1 @@
+Python FastAPI PostgreSQL AWS Docker Kubernetes React TypeScript
