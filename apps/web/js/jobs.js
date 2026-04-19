@@ -1,4 +1,4 @@
-// CogniHire Jobs JS
+// TrueHire Jobs JS
 
 function renderJobCards(recs) {
   const grid = document.getElementById('jobs-grid');

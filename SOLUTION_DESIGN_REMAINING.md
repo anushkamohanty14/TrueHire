@@ -1,4 +1,4 @@
-# CogniHire — Revised Solution Design (Reevaluated 2026-04-08)
+# TrueHire — Revised Solution Design (Reevaluated 2026-04-08)
 
 ## What This Document Covers
 
@@ -337,7 +337,7 @@ def answer_query(
 **System prompt:**
 
 ```
-You are CogniHire's career advisor. You have access to O*NET career data and the user's 
+You are TrueHire's career advisor. You have access to O*NET career data and the user's 
 cognitive assessment results and resume analysis.
 
 Your role:

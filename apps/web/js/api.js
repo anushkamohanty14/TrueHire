@@ -2,25 +2,25 @@ const API_BASE = '/api';
 
 // ── Auth helpers ──────────────────────────────────────────────────────────────
 function getToken() {
-  return localStorage.getItem('cognihire_token') || '';
+  return localStorage.getItem('truehire_token') || '';
 }
 function getUserId() {
-  return localStorage.getItem('cognihire_user_id') || '';
+  return localStorage.getItem('truehire_user_id') || '';
 }
 function getFullName() {
-  return localStorage.getItem('cognihire_full_name') || '';
+  return localStorage.getItem('truehire_full_name') || '';
 }
 function setUser(user_id, token, full_name) {
-  localStorage.setItem('cognihire_user_id', user_id);
-  localStorage.setItem('cognihire_token', token);
-  localStorage.setItem('cognihire_full_name', full_name || '');
+  localStorage.setItem('truehire_user_id', user_id);
+  localStorage.setItem('truehire_token', token);
+  localStorage.setItem('truehire_full_name', full_name || '');
 }
 function logout() {
   const token = getToken();
   if (token) fetch(API_BASE + '/auth/logout?token=' + token, {method: 'POST'}).catch(() => {});
-  localStorage.removeItem('cognihire_token');
-  localStorage.removeItem('cognihire_user_id');
-  localStorage.removeItem('cognihire_full_name');
+  localStorage.removeItem('truehire_token');
+  localStorage.removeItem('truehire_user_id');
+  localStorage.removeItem('truehire_full_name');
   window.location.href = '/login.html';
 }
 

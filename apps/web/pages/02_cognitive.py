@@ -753,7 +753,7 @@ def _render_intro() -> None:
     _topbar()
     st.markdown("""
     <div style="text-align:center; padding:3rem 0 2rem;">
-        <span class="ca-overline" style="text-align:center; display:block;">CogniHire</span>
+        <span class="ca-overline" style="text-align:center; display:block;">TrueHire</span>
         <h1 style="font-size:2.5rem; font-weight:900; letter-spacing:-0.04em;
                    color:#191c1e; font-family:Inter,sans-serif; margin-bottom:1rem; line-height:1.1;">
             Cognitive Assessment

@@ -19,7 +19,7 @@ from core.src.core.pipelines.phase2_user_input import (
 from core.src.core.pipelines.phase5_resume_processing import process_resume
 
 st.set_page_config(
-    page_title="CogniHire — Resume Analysis",
+    page_title="TrueHire — Resume Analysis",
     layout="wide",
     initial_sidebar_state="collapsed",
 )

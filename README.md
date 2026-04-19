@@ -1,4 +1,4 @@
-# CogniHire
+# TrueHire
 
 An AI-powered career intelligence platform that matches candidates to jobs using cognitive assessments, resume analysis, and O\*NET occupational data.
 

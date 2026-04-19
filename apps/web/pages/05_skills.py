@@ -16,7 +16,7 @@ from core.src.core.pipelines.phase7_hybrid_recommendation import HybridRecommend
 from core.src.core.storage.mongo_store import MongoUserStore
 
 st.set_page_config(
-    page_title="CogniHire — Skills & Growth",
+    page_title="TrueHire — Skills & Growth",
     layout="centered",
     initial_sidebar_state="collapsed",
 )
@@ -124,7 +124,7 @@ html, body, [data-testid="stAppViewContainer"] {
 
 st.markdown(
     '<div class="sk-topbar">'
-    '<span class="sk-brand">CogniHire</span>'
+    '<span class="sk-brand">TrueHire</span>'
     '<span class="sk-page">Skills &amp; Growth</span>'
     '</div>',
     unsafe_allow_html=True,

@@ -1,4 +1,4 @@
-// CogniHire Skills JS
+// TrueHire Skills JS
 
 async function loadSkillGaps() {
   const selector = document.getElementById('job-selector');

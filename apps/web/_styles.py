@@ -1,4 +1,4 @@
-"""Shared design system for CogniHire Streamlit pages.
+"""Shared design system for TrueHire Streamlit pages.
 
 Usage
 -----
@@ -430,7 +430,7 @@ def layout_html(active_page: str) -> str:
 
 
 def inject_styles() -> None:
-    """Inject the full CogniHire design system CSS."""
+    """Inject the full TrueHire design system CSS."""
     st.markdown(f"<style>{_CSS}</style>", unsafe_allow_html=True)
 
 

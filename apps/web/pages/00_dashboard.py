@@ -1,4 +1,4 @@
-"""Page 0 — CogniHire Dashboard.
+"""Page 0 — TrueHire Dashboard.
 
 Shows readiness ring, top-3 job matches, and skill/ability snapshots
 for the logged-in user.
@@ -15,7 +15,7 @@ from core.src.core.pipelines.phase7_hybrid_recommendation import HybridRecommend
 from core.src.core.storage.mongo_store import MongoUserStore
 
 st.set_page_config(
-    page_title="CogniHire — Dashboard",
+    page_title="TrueHire — Dashboard",
     layout="wide",
     initial_sidebar_state="collapsed",
 )

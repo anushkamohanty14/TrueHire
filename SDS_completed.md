@@ -1,10 +1,10 @@
 # Software Design Specifications
-## AI-Powered Career Preparation Platform — CogniHire
+## AI-Powered Career Preparation Platform — TrueHire
 
 | Field | Value |
 |---|---|
-| **Title** | SDS for AI-Powered Career Preparation Platform (CogniHire) |
-| **Project** | CogniHire — Team 61 |
+| **Title** | SDS for AI-Powered Career Preparation Platform (TrueHire) |
+| **Project** | TrueHire — Team 61 |
 | **Document Version** | 1.1 |
 | **Version Date** | 09/04/2026 |
 | **Prepared By** | Team 61 |
@@ -57,13 +57,13 @@
 
 ### 1.1 Purpose
 
-The purpose of this Software Design Specification (SDS) is to define the architectural and detailed design for CogniHire — an AI-powered career preparation platform. This document translates the functional and non-functional requirements established in the SRS into a comprehensive software architecture covering cognitive ability assessment, resume analysis, hybrid job recommendation, skill gap analysis, and (planned) LLM-based career guidance and interview simulation.
+The purpose of this Software Design Specification (SDS) is to define the architectural and detailed design for TrueHire — an AI-powered career preparation platform. This document translates the functional and non-functional requirements established in the SRS into a comprehensive software architecture covering cognitive ability assessment, resume analysis, hybrid job recommendation, skill gap analysis, and (planned) LLM-based career guidance and interview simulation.
 
 The intended audience is the development team (to guide implementation), project stakeholders, and instructors reviewing the system's structural integrity.
 
 ### 1.2 Scope
 
-This document applies to the entire CogniHire platform, a web-based application built on **FastAPI** (Python), a **static HTML/CSS/JavaScript** frontend served by the same process, and **MongoDB Atlas** as the persistent data store. It covers:
+This document applies to the entire TrueHire platform, a web-based application built on **FastAPI** (Python), a **static HTML/CSS/JavaScript** frontend served by the same process, and **MongoDB Atlas** as the persistent data store. It covers:
 
 - User registration and session-token-based authentication
 - Cognitive ability assessment (18 tasks across 9 ability domains, NCPT percentile normalisation)
@@ -92,12 +92,12 @@ The platform does **not** currently include voice/audio capture, video processin
 | SRS | Software Requirements Specification |
 | UML | Unified Modeling Language |
 | UUID | Universally Unique Identifier |
-| JWT | JSON Web Token (loosely used; CogniHire uses opaque UUID tokens stored in MongoDB) |
+| JWT | JSON Web Token (loosely used; TrueHire uses opaque UUID tokens stored in MongoDB) |
 | SHAP | SHapley Additive exPlanations (deferred to post-MVP) |
 
 ### 1.4 References
 
-1. Software Requirements Specification for CogniHire — AI-Powered Career Preparation Platform, Version 1.0.
+1. Software Requirements Specification for TrueHire — AI-Powered Career Preparation Platform, Version 1.0.
 2. O\*NET Online: [https://www.onetcenter.org/database.html](https://www.onetcenter.org/database.html) — source of occupational ability, activity, skill, and task data.
 3. Anthropic Claude API Documentation — planned integration for LLM features (Steps 2–4 of SOLUTION_DESIGN_REMAINING.md).
 4. FastAPI Documentation: [https://fastapi.tiangolo.com](https://fastapi.tiangolo.com)
@@ -237,7 +237,7 @@ The table below lists public interfaces this application exposes.
 
 ### 4.1 Design Model
 
-CogniHire follows a **layered client-server architecture** with a clear separation of concerns:
+TrueHire follows a **layered client-server architecture** with a clear separation of concerns:
 
 ```
 Browser (HTML + Vanilla JS)

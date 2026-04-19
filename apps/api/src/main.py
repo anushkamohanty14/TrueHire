@@ -14,7 +14,7 @@ from .routers.skills import router as skills_router
 from .routers.auth import router as auth_router
 from .routers.industries import router as industries_router
 
-app = FastAPI(title="CogniHire API", version="0.3.0")
+app = FastAPI(title="TrueHire API", version="0.3.0")
 
 app.add_middleware(
     CORSMiddleware,

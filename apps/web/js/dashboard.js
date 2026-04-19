@@ -1,4 +1,4 @@
-// CogniHire Dashboard JS
+// TrueHire Dashboard JS
 
 // Readiness ring: circumference ~552.9 for r=88
 function updateReadinessRing(score) {

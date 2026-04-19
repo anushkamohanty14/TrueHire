@@ -1,4 +1,4 @@
-// CogniHire Jobs JS
+// TrueHire Jobs JS
 
 // ── Industry picker ───────────────────────────────────────────────────────────
 

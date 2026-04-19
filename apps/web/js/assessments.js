@@ -1,4 +1,4 @@
-// CogniHire Assessments JS — state machine: idle → loading → testing → complete
+// TrueHire Assessments JS — state machine: idle → loading → testing → complete
 
 let tasks = [];
 let taskIndex = 0;

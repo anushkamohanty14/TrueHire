@@ -97,14 +97,14 @@
     </div>
 
     <p class="text-center text-xs text-slate-400 mt-6">
-      CogniHire &middot; Powered by O*NET &amp; NCPT cognitive science
+      TrueHire &middot; Powered by O*NET &amp; NCPT cognitive science
     </p>
   </div>
 
   <script src="/js/api.js"></script>
   <script>
     // Redirect if already logged in
-    if (localStorage.getItem('cognihire_token')) {
+    if (localStorage.getItem('truehire_token')) {
       window.location.href = '/';
     }
 
@@ -126,9 +126,9 @@
           username: document.getElementById('login-username').value,
           password: document.getElementById('login-password').value,
         });
-        localStorage.setItem('cognihire_token', data.token);
-        localStorage.setItem('cognihire_user_id', data.user_id);
-        localStorage.setItem('cognihire_full_name', data.full_name);
+        localStorage.setItem('truehire_token', data.token);
+        localStorage.setItem('truehire_user_id', data.user_id);
+        localStorage.setItem('truehire_full_name', data.full_name);
         window.location.href = '/';
       } catch(ex) {
         err.textContent = ex.message; err.classList.remove('hidden');
@@ -148,9 +148,9 @@
           password: document.getElementById('signup-password').value,
           full_name: document.getElementById('signup-name').value,
         });
-        localStorage.setItem('cognihire_token', data.token);
-        localStorage.setItem('cognihire_user_id', data.user_id);
-        localStorage.setItem('cognihire_full_name', data.full_name);
+        localStorage.setItem('truehire_token', data.token);
+        localStorage.setItem('truehire_user_id', data.user_id);
+        localStorage.setItem('truehire_full_name', data.full_name);
         window.location.href = '/';
       } catch(ex) {
         err.textContent = ex.message; err.classList.remove('hidden');

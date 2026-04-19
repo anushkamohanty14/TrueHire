@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Download and stage O*NET database files needed for the CogniHire RAG pipeline.
+"""Download and stage O*NET database files needed for the TrueHire RAG pipeline.
 
 O*NET publishes a freely downloadable text database at:
   https://www.onetcenter.org/database.html

@@ -1,4 +1,4 @@
-# CogniHire — Project Structure Plan (Phase 2 Onwards)
+# TrueHire — Project Structure Plan (Phase 2 Onwards)
 
 This document proposes the target repository structure, module boundaries, and delivery order for **Phase 2 to Phase 13**, assuming Phase 1 (O*NET knowledge base) is already available.
 
@@ -7,7 +7,7 @@ This document proposes the target repository structure, module boundaries, and d
 ## 1) Target Repository Layout
 
 ```text
-CogniHire/
+TrueHire/
 ├── apps/
 │   ├── api/                               # FastAPI backend
 │   │   ├── src/

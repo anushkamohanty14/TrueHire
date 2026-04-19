@@ -8,6 +8,6 @@ if [ ! -f ".env" ]; then
     exit 1
 fi
 
-echo "Starting CogniHire..."
+echo "Starting TrueHire..."
 echo "API + Frontend: http://localhost:8000"
 python -m uvicorn apps.api.src.main:app --reload --host 0.0.0.0 --port 8000

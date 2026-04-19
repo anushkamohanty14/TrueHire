@@ -1,4 +1,4 @@
-// CogniHire Resume JS
+// TrueHire Resume JS
 
 async function uploadResume(file) {
   const userId = getUserId();

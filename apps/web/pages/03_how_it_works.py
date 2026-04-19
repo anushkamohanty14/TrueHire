@@ -1,4 +1,4 @@
-"""Page 3 — How CogniHire Works.
+"""Page 3 — How TrueHire Works.
 
 Explains the cognitive science and O*NET methodology behind
 the ability-to-job matching pipeline.
@@ -6,7 +6,7 @@ the ability-to-job matching pipeline.
 import streamlit as st
 
 st.set_page_config(
-    page_title="CogniHire — How It Works",
+    page_title="TrueHire — How It Works",
     layout="centered",
     initial_sidebar_state="collapsed",
 )
@@ -101,7 +101,7 @@ html, body, [data-testid="stAppViewContainer"] {
 
 st.markdown(
     '<div class="hw-topbar">'
-    '<span class="hw-brand">CogniHire</span>'
+    '<span class="hw-brand">TrueHire</span>'
     '<span class="hw-page">How It Works</span>'
     '</div>',
     unsafe_allow_html=True,
@@ -110,7 +110,7 @@ st.markdown(
 st.markdown("""
 <h2 class="hw-heading">Science-backed career matching</h2>
 <p class="hw-lead">
-    CogniHire doesn't ask you to guess what kind of worker you are.
+    TrueHire doesn't ask you to guess what kind of worker you are.
     Instead, it measures <em>what your brain actually does well</em> — then maps that
     to the real cognitive demands of hundreds of careers using O*NET data from the
     US Department of Labor.
