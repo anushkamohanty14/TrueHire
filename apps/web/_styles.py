@@ -398,7 +398,7 @@ def layout_html(active_page: str) -> str:
 
 <nav style="position:fixed;top:0;left:0;right:0;z-index:1000;background:rgba(255,255,255,0.92);backdrop-filter:blur(20px);border-bottom:1px solid rgba(192,199,206,0.3);height:64px;display:flex;align-items:center;justify-content:space-between;padding:0 1.5rem;box-shadow:0 1px 3px rgba(0,0,0,0.06);">
   <div style="display:flex;align-items:center;gap:2rem;">
-    <span style="font-family:Manrope,sans-serif;font-size:1.125rem;font-weight:800;color:#00425e;letter-spacing:-0.03em;">Cognitive Architect</span>
+    <span style="font-family:Manrope,sans-serif;font-size:1.125rem;font-weight:800;color:#00425e;letter-spacing:-0.03em;">TrueHire</span>
   </div>
   <div style="display:flex;align-items:center;gap:1rem;">
     <span class="material-symbols-outlined" style="color:#40484e;cursor:pointer;font-size:1.25rem;">notifications</span>
