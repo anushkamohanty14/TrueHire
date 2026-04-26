@@ -40,6 +40,8 @@ async def upload_user_resume(user_id: str, file: UploadFile = File(...)) -> Resu
     metadata["education"] = result.education
     metadata["certifications"] = result.certifications
     metadata["experience_years"] = result.experience_years
+    metadata["soft_skills"] = result.soft_skills
+    metadata["past_job_titles"] = result.past_job_titles
 
     store = MongoUserStore()
 
@@ -55,6 +57,8 @@ async def upload_user_resume(user_id: str, file: UploadFile = File(...)) -> Resu
         education=result.education,
         certifications=result.certifications,
         experience_years=result.experience_years,
+        soft_skills=result.soft_skills,
+        past_job_titles=result.past_job_titles,
     )
 
     return ResumeUploadResponse(**metadata)

@@ -246,8 +246,12 @@ async function submitAllResponses() {
   if (grid) grid.innerHTML = '<div style="text-align:center;padding:2rem;color:#40484e;">Scoring your responses...</div>';
 
   try {
-    const result = await apiPost('/cognitive/assess', {user_id: userId, responses});
-    renderResults(result);
+    const data = await apiPost('/cognitive/assess', {user_id: userId, responses});
+    renderResults(data);
+    const score = Math.round(data.readiness_score);
+    setTimeout(() => {
+      window.location.href = '/results.html?score=' + score;
+    }, 3000);
   } catch (err) {
     showCompletionState(null, 'Error saving results: ' + err.message);
   }

@@ -21,3 +21,5 @@ class ResumeUploadResponse(BaseModel):
     education: list[str] = Field(default_factory=list)
     certifications: list[str] = Field(default_factory=list)
     experience_years: float | None = None
+    soft_skills: list[str] = Field(default_factory=list)
+    past_job_titles: list[str] = Field(default_factory=list)

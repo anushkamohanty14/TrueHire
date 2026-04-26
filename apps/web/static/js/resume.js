@@ -37,6 +37,40 @@ function renderExtractedSkills(skills) {
   `).join('');
 }
 
+function renderResumeExtras(profile) {
+  const chipsEl = document.getElementById('skill-chips');
+  if (!chipsEl) return;
+
+  const softSkills = profile.resume_soft_skills || [];
+  const jobTitles = profile.resume_past_job_titles || [];
+
+  let html = chipsEl.innerHTML;
+
+  if (softSkills.length) {
+    html += `
+      <div style="margin-top:1rem;">
+        <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.12em;color:#40484e;margin-bottom:0.5rem;">Soft Skills</div>
+        <div>${softSkills.map(s => `
+          <span style="display:inline-block;background:#eceef1;border-radius:6px;padding:0.25rem 0.65rem;font-size:11px;font-weight:600;color:#40484e;margin-right:0.4rem;margin-bottom:0.4rem;">${s}</span>
+        `).join('')}</div>
+      </div>
+    `;
+  }
+
+  if (jobTitles.length) {
+    html += `
+      <div style="margin-top:1rem;">
+        <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.12em;color:#40484e;margin-bottom:0.4rem;">Past Job Titles</div>
+        <ul style="margin:0;padding-left:1rem;color:#40484e;font-size:0.875rem;line-height:1.6;">
+          ${jobTitles.map(t => `<li>${t}</li>`).join('')}
+        </ul>
+      </div>
+    `;
+  }
+
+  chipsEl.innerHTML = html;
+}
+
 function renderSkillBars(abilityPercentiles) {
   const el = document.getElementById('skills-bars');
   if (!el) return;
@@ -67,6 +101,7 @@ async function loadResumeProfile() {
   try {
     const profile = await apiGet(`/users/profile/${userId}`);
     renderExtractedSkills(profile.resume_skills || []);
+    renderResumeExtras(profile);
     renderSkillBars(profile.ability_percentiles || {});
     const analyzedEl = document.getElementById('analyzed-status');
     if (analyzedEl && (profile.resume_skills || []).length > 0) {

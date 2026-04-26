@@ -122,6 +122,33 @@ _SKILL_TAXONOMY: List[str] = [
     "Excel", "Google Sheets", "PowerPoint", "Word",
 ]
 
+_SOFT_SKILL_TAXONOMY: List[str] = [
+    "Communication",
+    "Teamwork",
+    "Leadership",
+    "Problem Solving",
+    "Critical Thinking",
+    "Adaptability",
+    "Time Management",
+    "Collaboration",
+    "Conflict Resolution",
+    "Creativity",
+    "Decision Making",
+    "Stakeholder Management",
+    "Presentation",
+    "Negotiation",
+    "Mentoring",
+]
+
+_PAST_TITLE_PATTERNS = [
+    re.compile(
+        r"\b(?:as|worked as|served as|experience as)\s+([A-Z][A-Za-z\-/& ]{2,40})",
+        re.IGNORECASE,
+    ),
+    re.compile(r"\b(Senior\s+[A-Z][A-Za-z\-/& ]{2,30})\b"),
+    re.compile(r"\b([A-Z][A-Za-z\-/& ]{2,30}\s+(?:Engineer|Developer|Analyst|Manager|Scientist|Consultant|Specialist|Architect))\b"),
+]
+
 
 def _build_patterns(skills: List[str]):
     """Build compiled regex patterns for a list of skills, longest first."""
@@ -136,6 +163,7 @@ def _build_patterns(skills: List[str]):
 
 
 _BUILTIN_PATTERNS = _build_patterns(_SKILL_TAXONOMY)
+_SOFT_SKILL_PATTERNS = _build_patterns(_SOFT_SKILL_TAXONOMY)
 
 
 # ── Text extraction ───────────────────────────────────────────────────────────
@@ -257,6 +285,26 @@ def extract_skills_onet(text: str) -> List[str]:
         if pattern.search(text):
             found.append(skill)
     return found
+
+
+def extract_soft_skills(text: str) -> List[str]:
+    """Match soft skills against a small built-in taxonomy."""
+    found: List[str] = []
+    for skill, pattern in _SOFT_SKILL_PATTERNS:
+        if pattern.search(text):
+            found.append(skill)
+    return _normalise(found)
+
+
+def extract_past_job_titles(text: str) -> List[str]:
+    """Extract likely prior job titles using heuristic patterns."""
+    matches: List[str] = []
+    for pattern in _PAST_TITLE_PATTERNS:
+        for match in pattern.finditer(text):
+            title = (match.group(1) if match.groups() else match.group(0)).strip(" ,.-")
+            if 2 <= len(title.split()) <= 6:
+                matches.append(title)
+    return _deduplicate_strings(matches)[:10]
 
 
 # ── Education extraction ──────────────────────────────────────────────────────
@@ -428,6 +476,8 @@ def extract_skills(text: str) -> ResumeExtractionResult:
     # Experience years from experience section
     exp_text = sections.get("experience", "") or text
     experience_years = extract_experience_years(exp_text)
+    soft_skills = extract_soft_skills(text)
+    past_job_titles = extract_past_job_titles(exp_text)
 
     return ResumeExtractionResult(
         skills=all_skills,
@@ -436,6 +486,8 @@ def extract_skills(text: str) -> ResumeExtractionResult:
         education=education,
         certifications=certifications,
         experience_years=experience_years,
+        soft_skills=soft_skills,
+        past_job_titles=past_job_titles,
     )
 
 

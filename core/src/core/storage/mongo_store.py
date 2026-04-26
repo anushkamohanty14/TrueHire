@@ -29,6 +29,14 @@ def _get_collection() -> Collection:
     return client[db_name]["user_profiles"]
 
 
+def _get_auth_collection() -> Collection:
+    uri = os.environ.get("MONGODB_URI")
+    if not uri:
+        raise EnvironmentError("MONGODB_URI is not set. Add it to your .env file.")
+    db_name = os.environ.get("MONGODB_DB", "career_recommender")
+    return MongoClient(uri)[db_name]["auth_users"]
+
+
 class MongoUserStore:
     """MongoDB-backed profile store (production)."""
 
@@ -113,6 +121,8 @@ class MongoUserStore:
         education: List[str],
         certifications: List[str],
         experience_years: Optional[float],
+        soft_skills: List[str] = None,
+        past_job_titles: List[str] = None,
     ) -> None:
         """Overwrite the latest resume extraction for the user."""
         now = datetime.now(timezone.utc).isoformat()
@@ -123,6 +133,8 @@ class MongoUserStore:
             "education": education,
             "certifications": certifications,
             "experience_years": experience_years,
+            "soft_skills": soft_skills or [],
+            "past_job_titles": past_job_titles or [],
         }
         self._col.update_one(
             {"user_id": user_id},
@@ -133,6 +145,8 @@ class MongoUserStore:
                     "resume_education": education,
                     "resume_certifications": certifications,
                     "resume_experience_years": experience_years,
+                    "resume_soft_skills": soft_skills or [],
+                    "resume_past_job_titles": past_job_titles or [],
                 },
                 "$setOnInsert": {
                     "user_id": user_id,

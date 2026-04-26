@@ -32,8 +32,10 @@
     .section-label{font-family:Manrope,sans-serif;font-size:0.6875rem;text-transform:uppercase;letter-spacing:0.18em;font-weight:700;color:#40484e;margin:2rem 0 1rem;display:block;}
     .grid-2{display:grid;grid-template-columns:1fr 1fr;gap:1rem;}
     @media(max-width:900px){.grid-2{grid-template-columns:1fr;}.sidebar{display:none;}.main{margin-left:0;}}
-    /* Coming Soon badge */
-    .badge-soon{display:inline-block;background:#fef3c7;color:#92400e;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;padding:0.2rem 0.6rem;border-radius:4px;}
+    .mode-btn{background:#eceef1;color:#191c1e;border:1px solid #c0c7ce;border-radius:8px;padding:0.5rem 0.9rem;font-weight:700;font-size:12px;cursor:pointer;}
+    .mode-btn.active{background:#00425e;color:#ffffff;border-color:#00425e;}
+    .btn-primary{background:#00425e;color:#fff;border:none;border-radius:8px;padding:0.65rem 1.1rem;font-weight:700;font-size:13px;cursor:pointer;}
+    .btn-secondary{background:#eceef1;color:#191c1e;border:1px solid #c0c7ce;border-radius:8px;padding:0.65rem 1.1rem;font-weight:700;font-size:13px;cursor:pointer;}
   </style>
 </head>
 <body>
@@ -65,13 +67,16 @@
       <a href="/assessments.html" class="nav-item">
         <span class="material-symbols-outlined">psychology</span>Assessments
       </a>
+      <a href="/results.html" class="nav-item">
+        <span class="material-symbols-outlined">bar_chart</span>My Results
+      </a>
       <a href="/resume.html" class="nav-item">
         <span class="material-symbols-outlined">description</span>Resume
       </a>
       <a href="/jobs.html" class="nav-item">
         <span class="material-symbols-outlined">work_outline</span>Jobs
       </a>
-      <a href="/coming-soon.html" class="nav-item active">
+      <a href="/interview.html" class="nav-item active">
         <span class="material-symbols-outlined">record_voice_over</span>Interview
       </a>
       <a href="/skills.html" class="nav-item">
@@ -86,55 +91,89 @@
 
   <!-- Main Content -->
   <main class="main">
-    <!-- Header -->
-    <div class="card" style="text-align:center;padding:3rem;margin-bottom:1.5rem;">
-      <div style="width:80px;height:80px;border-radius:20px;background:#c6e7ff;display:flex;align-items:center;justify-content:center;margin:0 auto 1.5rem;">
-        <span class="material-symbols-outlined" style="font-size:2.5rem;color:#00425e;">record_voice_over</span>
+    <div class="card" id="screen-setup">
+      <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.15em;color:#40484e;margin-bottom:0.25rem;">Interview Setup</div>
+      <h1 style="font-family:Manrope,sans-serif;font-size:1.6rem;font-weight:800;color:#191c1e;margin-bottom:0.5rem;">AI Interview Simulator</h1>
+      <p style="font-size:0.9rem;color:#40484e;line-height:1.6;margin-bottom:1.2rem;">Pick a target role and interview mode. We will generate questions from your profile and job context.</p>
+
+      <label for="job-select" style="display:block;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:#40484e;margin-bottom:0.4rem;">Target Job</label>
+      <select id="job-select" style="width:100%;padding:0.7rem 0.8rem;border:1px solid #c0c7ce;border-radius:8px;background:#fff;color:#191c1e;font-size:0.92rem;margin-bottom:1rem;">
+        <option value="">Loading recommendations...</option>
+      </select>
+
+      <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:#40484e;margin-bottom:0.4rem;">Mode</div>
+      <div style="display:flex;gap:0.5rem;flex-wrap:wrap;margin-bottom:1rem;">
+        <button class="mode-btn active" data-mode="mixed">Mixed</button>
+        <button class="mode-btn" data-mode="behavioral">Behavioral</button>
+        <button class="mode-btn" data-mode="technical">Technical</button>
       </div>
-      <span class="badge-soon">Coming Soon</span>
-      <h1 style="font-family:Manrope,sans-serif;font-size:2rem;font-weight:800;color:#191c1e;margin:0.75rem 0 0.5rem;letter-spacing:-0.03em;">AI Interview Simulator</h1>
-      <p style="font-size:0.9375rem;color:#40484e;max-width:480px;margin:0 auto 1.5rem;line-height:1.6;">
-        Practice with AI-powered mock interviews tailored to your target role and cognitive profile.
-        Get real-time feedback on your answers.
-      </p>
-      <div style="display:flex;gap:0.75rem;justify-content:center;flex-wrap:wrap;">
-        <a href="/assessments.html" style="display:inline-block;background:#00425e;color:#fff;padding:0.625rem 1.25rem;border-radius:8px;font-weight:600;font-size:13px;">Take Cognitive Assessment</a>
-        <a href="/jobs.html" style="display:inline-block;background:#eceef1;color:#191c1e;padding:0.625rem 1.25rem;border-radius:8px;font-weight:600;font-size:13px;">View Job Matches</a>
+
+      <div id="setup-error" style="display:none;color:#ba1a1a;font-size:0.85rem;margin-bottom:0.8rem;"></div>
+      <button id="btn-start" class="btn-primary">Start Interview</button>
+    </div>
+
+    <div class="card" id="screen-qa" style="display:none;">
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:0.8rem;flex-wrap:wrap;margin-bottom:0.8rem;">
+        <div id="qa-progress" style="font-size:0.9rem;font-weight:700;color:#00425e;">Question 1 of 5</div>
+        <span id="qa-type-badge" style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;background:#c6e7ff;color:#00425e;border-radius:999px;padding:0.25rem 0.6rem;">mixed</span>
+      </div>
+
+      <div id="qa-question" style="font-family:Manrope,sans-serif;font-size:1.1rem;font-weight:700;color:#191c1e;line-height:1.5;margin-bottom:0.5rem;"></div>
+      <div id="qa-focus" style="font-size:0.84rem;color:#006a6a;margin-bottom:0.8rem;"></div>
+
+      <textarea id="qa-answer" rows="7" placeholder="Type your answer..." style="width:100%;padding:0.75rem;border:1px solid #c0c7ce;border-radius:10px;resize:vertical;font-family:Inter,sans-serif;font-size:0.9rem;"></textarea>
+
+      <div style="display:flex;gap:0.6rem;align-items:center;margin-top:0.8rem;">
+        <button id="btn-submit" class="btn-primary">Submit Answer</button>
+        <button id="btn-next" class="btn-secondary" style="display:none;">Next Question</button>
+      </div>
+
+      <div id="feedback-panel" style="display:none;margin-top:1rem;background:#f2f4f7;border:1px solid #c0c7ce;border-radius:10px;padding:0.9rem;">
+        <div style="display:flex;align-items:center;gap:0.5rem;margin-bottom:0.5rem;">
+          <span style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:#40484e;">Score</span>
+          <span id="fb-score" style="background:#00425e;color:#fff;border-radius:999px;padding:0.1rem 0.5rem;font-size:12px;font-weight:700;"></span>
+        </div>
+        <p id="fb-feedback" style="font-size:0.88rem;color:#191c1e;line-height:1.5;margin-bottom:0.5rem;"></p>
+        <p id="fb-strength" style="font-size:0.84rem;color:#006a6a;margin-bottom:0.25rem;"></p>
+        <p id="fb-improvement" style="font-size:0.84rem;color:#40484e;"></p>
       </div>
     </div>
 
-    <!-- Feature Preview -->
-    <span class="section-label">What's Coming</span>
-    <div class="grid-2">
-      <div class="card">
-        <span class="material-symbols-outlined" style="font-size:1.75rem;color:#00425e;margin-bottom:0.75rem;display:block;">psychology</span>
-        <div style="font-family:Manrope,sans-serif;font-size:1rem;font-weight:700;color:#191c1e;margin-bottom:0.25rem;">Cognitive-Aware Questions</div>
-        <p style="font-size:0.875rem;color:#40484e;line-height:1.6;">Interview questions adapted to your assessed cognitive strengths and the job's requirements.</p>
+    <div class="card" id="screen-summary" style="display:none;">
+      <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.15em;color:#40484e;margin-bottom:0.25rem;">Session Summary</div>
+      <h2 style="font-family:Manrope,sans-serif;font-size:1.35rem;font-weight:800;color:#191c1e;margin-bottom:0.4rem;">Interview Results</h2>
+      <p style="font-size:0.9rem;color:#40484e;margin-bottom:0.7rem;">Role: <strong id="sum-job"></strong></p>
+      <div id="sum-score" style="font-family:Manrope,sans-serif;font-size:2rem;font-weight:800;color:#00425e;margin-bottom:1rem;">0.0 / 5</div>
+
+      <div class="grid-2">
+        <div>
+          <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:#006a6a;margin-bottom:0.4rem;">Strengths</div>
+          <ul id="sum-strengths" style="padding-left:1rem;color:#191c1e;font-size:0.88rem;line-height:1.6;"></ul>
+        </div>
+        <div>
+          <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:#40484e;margin-bottom:0.4rem;">Areas to Improve</div>
+          <ul id="sum-improve" style="padding-left:1rem;color:#191c1e;font-size:0.88rem;line-height:1.6;"></ul>
+        </div>
       </div>
-      <div class="card">
-        <span class="material-symbols-outlined" style="font-size:1.75rem;color:#006a6a;margin-bottom:0.75rem;display:block;">rate_review</span>
-        <div style="font-family:Manrope,sans-serif;font-size:1rem;font-weight:700;color:#191c1e;margin-bottom:0.25rem;">Instant Feedback</div>
-        <p style="font-size:0.875rem;color:#40484e;line-height:1.6;">Real-time analysis of your answers with suggestions for improvement and STAR-format guidance.</p>
+
+      <div style="margin-top:1rem;background:#f2f4f7;border-radius:8px;padding:0.8rem;">
+        <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:#40484e;margin-bottom:0.3rem;">Recommended Focus</div>
+        <div id="sum-focus" style="font-size:0.9rem;color:#191c1e;"></div>
       </div>
-      <div class="card">
-        <span class="material-symbols-outlined" style="font-size:1.75rem;color:#40484e;margin-bottom:0.75rem;display:block;">trending_up</span>
-        <div style="font-family:Manrope,sans-serif;font-size:1rem;font-weight:700;color:#191c1e;margin-bottom:0.25rem;">Progress Tracking</div>
-        <p style="font-size:0.875rem;color:#40484e;line-height:1.6;">Track your interview performance over time and see how your skills improve with practice.</p>
+
+      <div style="display:flex;gap:0.6rem;flex-wrap:wrap;margin-top:1rem;">
+        <button id="btn-practice-again" class="btn-primary">Practice Again</button>
+        <button id="btn-back-jobs" class="btn-secondary">Back to Jobs</button>
       </div>
-      <div class="card">
-        <span class="material-symbols-outlined" style="font-size:1.75rem;color:#b45309;margin-bottom:0.75rem;display:block;">work_outline</span>
-        <div style="font-family:Manrope,sans-serif;font-size:1rem;font-weight:700;color:#191c1e;margin-bottom:0.25rem;">Role-Specific Sessions</div>
-        <p style="font-size:0.875rem;color:#40484e;line-height:1.6;">Mock interviews tailored to specific O*NET job titles from your recommendation list.</p>
-      </div>
+    </div>
+
+    <div class="card" id="loading" style="display:none;text-align:center;padding:2rem;">
+      <span class="material-symbols-outlined" style="font-size:2.2rem;color:#00425e;display:block;margin-bottom:0.4rem;">hourglass_top</span>
+      <div id="loading-msg" style="font-size:0.92rem;color:#40484e;">Loading...</div>
     </div>
   </main>
 
   <script src="/js/api.js"></script>
-  <script>
-    document.addEventListener('DOMContentLoaded', () => {
-      requireAuth();
-      populateNavUser();
-    });
-  </script>
+  <script src="/js/interview.js"></script>
 </body>
 </html>
