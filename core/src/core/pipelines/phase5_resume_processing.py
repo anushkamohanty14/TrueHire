@@ -1,4 +1,4 @@
-"""Phase 5 — Resume text extraction and rule-based skill identification.
+"""Phase 5 — Resume text extraction and skill identification.
 
 Pipeline
 --------
@@ -9,9 +9,8 @@ Pipeline
 5. extract_education(text)    →  degree, institution, year
 6. extract_certifications(text) → list of cert strings
 7. extract_experience_years(text) → estimated years of experience
-8. process_resume(file_path)  →  ResumeExtractionResult (end-to-end)
-
-All extraction is purely rule-based — no LLM or API key required.
+8. extract_skills_llm(text)   →  LLM-based extraction via Claude (requires ANTHROPIC_API_KEY)
+9. process_resume(file_path)  →  ResumeExtractionResult (tries LLM, falls back to rules)
 """
 from __future__ import annotations
 
@@ -34,6 +33,8 @@ class ResumeExtractionResult:
     education: List[str] = field(default_factory=list)
     certifications: List[str] = field(default_factory=list)
     experience_years: Optional[float] = None
+    soft_skills: List[str] = field(default_factory=list)
+    past_job_titles: List[str] = field(default_factory=list)
     error: Optional[str] = None
 
 
@@ -343,6 +344,66 @@ def extract_experience_years(text: str) -> Optional[float]:
     return round(total, 1) if total > 0 else None
 
 
+# ── LLM extraction ───────────────────────────────────────────────────────────
+
+def extract_skills_llm(resume_text: str) -> ResumeExtractionResult:
+    """Extract all resume fields via Claude.
+
+    Requires ``ANTHROPIC_API_KEY`` in the environment.
+    Raises on API or parse failure — caller should catch and fall back to rules.
+    """
+    import json
+    import os
+    from openai import OpenAI
+
+    prompt = f"""Extract structured information from the resume below.
+Return ONLY valid JSON matching this exact schema — no explanation, no markdown fences:
+
+{{
+  "technical_skills": ["Python", "AWS"],
+  "soft_skills": ["communication", "leadership"],
+  "education": ["B.S. Computer Science, MIT, 2020"],
+  "certifications": ["AWS Solutions Architect"],
+  "years_of_experience": 4,
+  "past_job_titles": ["Software Engineer", "Backend Developer"]
+}}
+
+Rules:
+- Only include skills explicitly mentioned; do not infer
+- Normalize skill names (e.g. "JS" → "JavaScript")
+- education: one string per degree, format "Degree, Institution, Year"
+- years_of_experience: integer or null if not determinable
+- Return empty arrays for fields with no data; null for years_of_experience if absent
+
+Resume:
+{resume_text[:8000]}"""
+
+    client = OpenAI(api_key=os.environ["GROQ_API_KEY"], base_url="https://api.groq.com/openai/v1")
+    message = client.chat.completions.create(
+        model="llama-3.3-70b-versatile",
+        max_tokens=1024,
+        messages=[{"role": "user", "content": prompt}],
+    )
+
+    raw = message.choices[0].message.content.strip()
+    if raw.startswith("```"):
+        raw = re.sub(r"^```[a-z]*\n?", "", raw)
+        raw = re.sub(r"\n?```$", "", raw)
+
+    data = json.loads(raw)
+
+    return ResumeExtractionResult(
+        skills=data.get("technical_skills") or [],
+        soft_skills=data.get("soft_skills") or [],
+        education=data.get("education") or [],
+        certifications=data.get("certifications") or [],
+        experience_years=data.get("years_of_experience"),
+        past_job_titles=data.get("past_job_titles") or [],
+        method="llm",
+        raw_text_length=len(resume_text),
+    )
+
+
 # ── Combined pipeline ─────────────────────────────────────────────────────────
 
 def extract_skills(text: str) -> ResumeExtractionResult:
@@ -379,7 +440,11 @@ def extract_skills(text: str) -> ResumeExtractionResult:
 
 
 def process_resume(file_path: str) -> ResumeExtractionResult:
-    """End-to-end: extract text from *file_path* then extract all fields."""
+    """End-to-end: extract text from *file_path* then extract all fields.
+
+    Tries LLM extraction first (requires ANTHROPIC_API_KEY); falls back to
+    rule-based extraction if the API is unavailable or returns invalid output.
+    """
     try:
         text = extract_text(file_path)
     except Exception as exc:
@@ -394,7 +459,10 @@ def process_resume(file_path: str) -> ResumeExtractionResult:
             error="No readable text found in the file.",
         )
 
-    return extract_skills(text)
+    try:
+        return extract_skills_llm(text)
+    except Exception:
+        return extract_skills(text)
 
 
 # ── Helpers ───────────────────────────────────────────────────────────────────
