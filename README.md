@@ -79,15 +79,4 @@ scripts/                  # utility scripts (e.g. download_onet_datasets.py)
 python -m pytest tests/ -v
 ```
 
-## Status
 
-| Area | Status |
-|---|---|
-| Auth | Complete |
-| Cognitive assessment (18 tasks, 9 abilities) | Complete |
-| Assessment history + results page | Complete |
-| Resume upload + LLM extraction | Complete |
-| Hybrid job recommendations | Complete |
-| Skill gap analysis | Complete |
-| AI interview simulation (pipeline) | Complete |
-| Interview frontend | In progress |
