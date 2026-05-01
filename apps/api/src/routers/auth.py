@@ -1,8 +1,10 @@
-import sys, hashlib, os, uuid
+import sys, os, uuid
+import bcrypt
 from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[5]))
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, Depends, HTTPException
+from ..dependencies import require_token
 from pydantic import BaseModel
 from pymongo import MongoClient
 from pymongo.errors import PyMongoError
@@ -11,22 +13,26 @@ from dotenv import load_dotenv
 load_dotenv()
 router = APIRouter(prefix="/api/auth", tags=["auth"])
 
-def _col(name):
-    uri = os.environ.get("MONGODB_URI")
-    if not uri:
-        raise HTTPException(
-            status_code=503,
-            detail="Database is not configured. Set MONGODB_URI in environment.",
-        )
-    try:
-        client = MongoClient(uri, serverSelectionTimeoutMS=5000)
-        db_name = os.environ.get("MONGODB_DB", "career_recommender")
-        return client[db_name][name]
-    except PyMongoError:
-        raise HTTPException(status_code=503, detail="Database is unavailable")
+_mongo: MongoClient = None
 
-def _hash(password: str, salt: str) -> str:
-    return hashlib.sha256(f"{salt}{password}".encode()).hexdigest()
+def _get_client() -> MongoClient:
+    global _mongo
+    if _mongo is None:
+        uri = os.environ.get("MONGODB_URI")
+        if not uri:
+            raise HTTPException(status_code=503, detail="Database is not configured. Set MONGODB_URI in environment.")
+        _mongo = MongoClient(uri, serverSelectionTimeoutMS=5000)
+    return _mongo
+
+def _col(name):
+    db_name = os.environ.get("MONGODB_DB", "career_recommender")
+    return _get_client()[db_name][name]
+
+def _hash_password(password: str) -> str:
+    return bcrypt.hashpw(password.encode(), bcrypt.gensalt()).decode()
+
+def _check_password(password: str, hashed: str) -> bool:
+    return bcrypt.checkpw(password.encode(), hashed.encode())
 
 class SignupRequest(BaseModel):
     username: str   # used as user_id
@@ -52,14 +58,12 @@ def signup(req: SignupRequest):
             raise HTTPException(400, "Username already taken")
         if users.find_one({"email": req.email}):
             raise HTTPException(400, "Email already registered")
-        salt = uuid.uuid4().hex
         token = uuid.uuid4().hex
         users.insert_one({
             "username": req.username,
             "email": req.email,
             "full_name": req.full_name,
-            "salt": salt,
-            "password_hash": _hash(req.password, salt),
+            "password_hash": _hash_password(req.password),
             "token": token,
         })
         # Also create a minimal user profile in user_profiles collection
@@ -78,7 +82,7 @@ def login(req: LoginRequest):
     try:
         users = _col("auth_users")
         user = users.find_one({"username": req.username})
-        if not user or user["password_hash"] != _hash(req.password, user["salt"]):
+        if not user or not _check_password(req.password, user["password_hash"]):
             raise HTTPException(401, "Invalid username or password")
         # Rotate token on login
         token = uuid.uuid4().hex
@@ -93,7 +97,7 @@ def login(req: LoginRequest):
         raise HTTPException(status_code=503, detail="Database is unavailable")
 
 @router.get("/me")
-def me_from_token(token: str):
+def me_from_token(token: str = Depends(require_token)):
     try:
         users = _col("auth_users")
         user = users.find_one({"token": token})
@@ -104,7 +108,7 @@ def me_from_token(token: str):
         raise HTTPException(status_code=503, detail="Database is unavailable")
 
 @router.post("/logout")
-def logout(token: str):
+def logout(token: str = Depends(require_token)):
     try:
         users = _col("auth_users")
         users.update_one({"token": token}, {"$set": {"token": ""}})

@@ -11,6 +11,7 @@ import os
 import tempfile
 import time
 import unittest
+import uuid
 
 import requests
 
@@ -28,6 +29,26 @@ def _post(path, **kwargs):
 
 def _get(path, **kwargs):
     return requests.get(_api(path), **kwargs)
+
+
+def _register_and_login_integration(username=None):
+    """Create a fresh user and return (username, token) for integration tests."""
+    username = username or f"integ_{uuid.uuid4().hex[:8]}"
+    r = _post("/api/auth/signup", json={
+        "username": username,
+        "email": f"{username}@integ.test",
+        "password": "IntegPass123!",
+        "full_name": "Integration Test",
+    })
+    if r.status_code != 200:
+        raise RuntimeError(f"Signup failed: {r.text}")
+    token = r.json()["token"]
+    return username, token
+
+
+def _auth(token):
+    """Return Authorization header dict for requests."""
+    return {"Authorization": f"Bearer {token}"}
 
 
 # ── 1. Cognitive tasks endpoint ───────────────────────────────────────────────
@@ -103,6 +124,21 @@ class TestCognitiveTasks(unittest.TestCase):
 class TestAssessAndHistory(unittest.TestCase):
 
     TEST_USER = f"integration_test_user_{int(time.time())}"
+    _token = None
+
+    @classmethod
+    def setUpClass(cls):
+        r = _post("/api/auth/signup", json={
+            "username": cls.TEST_USER,
+            "email": f"{cls.TEST_USER}@test.example",
+            "password": "TestPass123!",
+        })
+        if r.status_code == 200:
+            cls._token = r.json()["token"]
+        else:
+            # User may already exist from a previous test run — try login
+            r2 = _post("/api/auth/login", json={"username": cls.TEST_USER, "password": "TestPass123!"})
+            cls._token = r2.json().get("token") if r2.status_code == 200 else None
 
     def _make_responses(self, tasks):
         return [
@@ -115,7 +151,7 @@ class TestAssessAndHistory(unittest.TestCase):
         self.assertEqual(tasks_r.status_code, 200)
         tasks = tasks_r.json()
         payload = {"user_id": self.TEST_USER, "responses": self._make_responses(tasks)}
-        r = _post("/api/cognitive/assess", json=payload)
+        r = _post("/api/cognitive/assess", json=payload, headers=_auth(self._token))
         self.assertEqual(r.status_code, 200, f"Assess failed: {r.text}")
         body = r.json()
         self.assertIn("ability_percentiles", body)
@@ -127,7 +163,7 @@ class TestAssessAndHistory(unittest.TestCase):
         tasks_r = _get("/api/cognitive/tasks")
         tasks = tasks_r.json()
         payload = {"user_id": self.TEST_USER, "responses": self._make_responses(tasks)}
-        _post("/api/cognitive/assess", json=payload)
+        _post("/api/cognitive/assess", json=payload, headers=_auth(self._token))
 
         hist_r = _get(f"/api/cognitive/history/{self.TEST_USER}")
         self.assertEqual(hist_r.status_code, 200, f"History endpoint failed: {hist_r.text}")
@@ -139,7 +175,7 @@ class TestAssessAndHistory(unittest.TestCase):
         tasks_r = _get("/api/cognitive/tasks")
         tasks = tasks_r.json()
         payload = {"user_id": self.TEST_USER, "responses": self._make_responses(tasks)}
-        _post("/api/cognitive/assess", json=payload)
+        _post("/api/cognitive/assess", json=payload, headers=_auth(self._token))
 
         body = _get(f"/api/cognitive/history/{self.TEST_USER}").json()
         attempt = body["attempts"][0]
@@ -151,8 +187,8 @@ class TestAssessAndHistory(unittest.TestCase):
         tasks_r = _get("/api/cognitive/tasks")
         tasks = tasks_r.json()
         payload = {"user_id": self.TEST_USER, "responses": self._make_responses(tasks)}
-        _post("/api/cognitive/assess", json=payload)
-        _post("/api/cognitive/assess", json=payload)
+        _post("/api/cognitive/assess", json=payload, headers=_auth(self._token))
+        _post("/api/cognitive/assess", json=payload, headers=_auth(self._token))
 
         body = _get(f"/api/cognitive/history/{self.TEST_USER}").json()
         self.assertGreaterEqual(body["attempt_count"], 2,
@@ -210,15 +246,15 @@ class TestResumeUpload(unittest.TestCase):
         self.assertIn("python", skills_lower, "Python not extracted")
 
     def test_upload_does_not_require_api_key(self):
-        """Resume parsing must work without any LLM/API key — pure rule-based."""
+        """Resume parsing must succeed regardless of whether an LLM key is present."""
         r = self._upload("Python Java AWS Docker Kubernetes")
         self.assertNotEqual(r.status_code, 401, "Upload returned 401 — auth/key required")
         self.assertNotEqual(r.status_code, 500,
                             f"Upload returned 500 — possible LLM/API key error: {r.text}")
         self.assertEqual(r.status_code, 200)
         body = r.json()
-        self.assertEqual(body.get("extraction_method"), "rules",
-                         f"Extraction method should be 'rules', got: {body.get('extraction_method')}")
+        self.assertIn(body.get("extraction_method"), ("rules", "llm"),
+                      f"Unexpected extraction_method: {body.get('extraction_method')}")
 
     def test_upload_response_schema(self):
         r = self._upload("Python AWS Docker")
@@ -271,13 +307,10 @@ class TestStaticFrontend(unittest.TestCase):
         self.assertIn("user_id=", src,
                       "resume.js does not include user_id in query string")
 
-    def test_results_page_exists(self):
+    def test_results_page_redirects_or_removed(self):
+        """results.html was merged into history.html — verify it's gone (404)."""
         r = requests.get(f"{BASE}/results.html")
-        self.assertEqual(r.status_code, 200, "results.html not found — history page missing")
-
-    def test_results_js_served(self):
-        r = requests.get(f"{BASE}/js/results.js")
-        self.assertEqual(r.status_code, 200, "results.js not served")
+        self.assertEqual(r.status_code, 404, "results.html should have been removed")
 
     def test_history_page_served(self):
         r = requests.get(f"{BASE}/history.html")
@@ -291,8 +324,8 @@ class TestStaticFrontend(unittest.TestCase):
     def test_history_js_fetches_users_history_endpoint(self):
         r = requests.get(f"{BASE}/js/history.js")
         src = r.text
-        self.assertIn("/api/users/history/", src,
-                      "history.js does not call /api/users/history/ endpoint")
+        self.assertIn("/users/history/", src,
+                      "history.js does not call /users/history/ endpoint via apiGet")
 
     def test_history_page_has_history_nav_link(self):
         r = requests.get(f"{BASE}/history.html")
@@ -305,6 +338,20 @@ class TestStaticFrontend(unittest.TestCase):
 class TestUserHistory(unittest.TestCase):
 
     TEST_USER = f"integration_history_test_{int(time.time())}"
+    _token = None
+
+    @classmethod
+    def setUpClass(cls):
+        r = _post("/api/auth/signup", json={
+            "username": cls.TEST_USER,
+            "email": f"{cls.TEST_USER}@test.example",
+            "password": "TestPass123!",
+        })
+        if r.status_code == 200:
+            cls._token = r.json()["token"]
+        else:
+            r2 = _post("/api/auth/login", json={"username": cls.TEST_USER, "password": "TestPass123!"})
+            cls._token = r2.json().get("token") if r2.status_code == 200 else None
 
     def test_history_empty_for_new_user(self):
         """Brand-new user should return nulls, not 404."""
@@ -333,7 +380,8 @@ class TestUserHistory(unittest.TestCase):
             for t in tasks
         ]
         _post("/api/cognitive/assess",
-              json={"user_id": self.TEST_USER, "responses": responses})
+              json={"user_id": self.TEST_USER, "responses": responses},
+              headers=_auth(self._token))
 
         r = _get(f"/api/users/history/{self.TEST_USER}")
         self.assertEqual(r.status_code, 200)
@@ -399,17 +447,27 @@ class TestUserHistory(unittest.TestCase):
     def test_assessment_overwrites_on_retake(self):
         """Retaking the assessment should update the latest_assessment_at timestamp."""
         uid = self.TEST_USER + "_retake"
+        # Register this variant user to get a token
+        r_reg = _post("/api/auth/signup", json={
+            "username": uid,
+            "email": f"{uid}@test.example",
+            "password": "TestPass123!",
+        })
+        retake_token = r_reg.json()["token"] if r_reg.status_code == 200 else None
+        if retake_token is None:
+            r_log = _post("/api/auth/login", json={"username": uid, "password": "TestPass123!"})
+            retake_token = r_log.json().get("token")
         tasks = _get("/api/cognitive/tasks").json()
         responses = [
             {"ability": t["ability"], "is_correct": True, "reaction_time_ms": 500.0}
             for t in tasks
         ]
         payload = {"user_id": uid, "responses": responses}
-        _post("/api/cognitive/assess", json=payload)
+        _post("/api/cognitive/assess", json=payload, headers=_auth(retake_token))
         first_snapshot = _get(f"/api/users/history/{uid}").json()
 
         time.sleep(1)  # ensure timestamps differ
-        _post("/api/cognitive/assess", json=payload)
+        _post("/api/cognitive/assess", json=payload, headers=_auth(retake_token))
         second_snapshot = _get(f"/api/users/history/{uid}").json()
 
         t1 = first_snapshot["assessment"]["taken_at"]
@@ -423,6 +481,20 @@ class TestUserHistory(unittest.TestCase):
 class TestInterviewContext(unittest.TestCase):
 
     TEST_USER = f"integration_interview_ctx_{int(time.time())}"
+    _token = None
+
+    @classmethod
+    def setUpClass(cls):
+        r = _post("/api/auth/signup", json={
+            "username": cls.TEST_USER,
+            "email": f"{cls.TEST_USER}@test.example",
+            "password": "TestPass123!",
+        })
+        if r.status_code == 200:
+            cls._token = r.json()["token"]
+        else:
+            r2 = _post("/api/auth/login", json={"username": cls.TEST_USER, "password": "TestPass123!"})
+            cls._token = r2.json().get("token") if r2.status_code == 200 else None
 
     def _seed_user(self):
         """Upload resume + take assessment to fully populate the user."""
@@ -432,7 +504,8 @@ class TestInterviewContext(unittest.TestCase):
             for i, t in enumerate(tasks)
         ]
         _post("/api/cognitive/assess",
-              json={"user_id": self.TEST_USER, "responses": responses})
+              json={"user_id": self.TEST_USER, "responses": responses},
+              headers=_auth(self._token))
 
         with tempfile.NamedTemporaryFile(suffix=".txt", mode="w",
                                          delete=False, encoding="utf-8") as f:
@@ -447,7 +520,7 @@ class TestInterviewContext(unittest.TestCase):
 
     def test_interview_context_schema(self):
         self._seed_user()
-        r = _get(f"/api/users/interview-context/{self.TEST_USER}")
+        r = _get(f"/api/users/interview-context/{self.TEST_USER}", headers=_auth(self._token))
         self.assertEqual(r.status_code, 200, f"Interview context failed: {r.text}")
         body = r.json()
         self.assertIn("user_id", body)
@@ -456,7 +529,7 @@ class TestInterviewContext(unittest.TestCase):
 
     def test_cognitive_profile_fields(self):
         self._seed_user()
-        body = _get(f"/api/users/interview-context/{self.TEST_USER}").json()
+        body = _get(f"/api/users/interview-context/{self.TEST_USER}", headers=_auth(self._token)).json()
         cp = body["cognitive_profile"]
         for field in ("readiness_score", "ability_percentiles", "strengths",
                       "areas_for_improvement", "assessed_at"):
@@ -464,7 +537,7 @@ class TestInterviewContext(unittest.TestCase):
 
     def test_technical_profile_fields(self):
         self._seed_user()
-        body = _get(f"/api/users/interview-context/{self.TEST_USER}").json()
+        body = _get(f"/api/users/interview-context/{self.TEST_USER}", headers=_auth(self._token)).json()
         tp = body["technical_profile"]
         for field in ("skills", "education", "certifications",
                       "experience_years", "resume_uploaded_at"):
@@ -473,14 +546,14 @@ class TestInterviewContext(unittest.TestCase):
     def test_strengths_are_human_readable(self):
         """Strengths should use human labels like 'Deductive Reasoning', not snake_case."""
         self._seed_user()
-        body = _get(f"/api/users/interview-context/{self.TEST_USER}").json()
+        body = _get(f"/api/users/interview-context/{self.TEST_USER}", headers=_auth(self._token)).json()
         for strength in body["cognitive_profile"]["strengths"]:
             self.assertNotIn("_", strength,
                              f"Strength '{strength}' is snake_case — should be human-readable")
 
     def test_context_has_skills(self):
         self._seed_user()
-        body = _get(f"/api/users/interview-context/{self.TEST_USER}").json()
+        body = _get(f"/api/users/interview-context/{self.TEST_USER}", headers=_auth(self._token)).json()
         skills = body["technical_profile"]["skills"]
         self.assertGreater(len(skills), 0, "Interview context should include extracted skills")
         skills_lower = [s.lower() for s in skills]

@@ -17,7 +17,10 @@ function setUser(user_id, token, full_name) {
 }
 function logout() {
   const token = getToken();
-  if (token) fetch(API_BASE + '/auth/logout?token=' + token, {method: 'POST'}).catch(() => {});
+  if (token) fetch(API_BASE + '/auth/logout', {
+    method: 'POST',
+    headers: { 'Authorization': 'Bearer ' + token }
+  }).catch(() => {});
   localStorage.removeItem('truehire_token');
   localStorage.removeItem('truehire_user_id');
   localStorage.removeItem('truehire_full_name');
@@ -35,13 +38,17 @@ function requireAuth() {
 
 // ── Fetch wrappers ────────────────────────────────────────────────────────────
 function _authHeaders() {
-  return {'Content-Type': 'application/json', 'X-Token': getToken()};
+  return {
+    'Content-Type': 'application/json',
+    'Authorization': 'Bearer ' + getToken(),
+  };
 }
 
 async function apiGet(path) {
   const token = getToken();
-  const sep = path.includes('?') ? '&' : '?';
-  const res = await fetch(API_BASE + path + sep + 'token=' + token);
+  const res = await fetch(API_BASE + path, {
+    headers: { 'Authorization': 'Bearer ' + token }
+  });
   if (res.status === 401) { logout(); throw new Error('Session expired'); }
   if (!res.ok) throw new Error(`API error ${res.status}`);
   return res.json();
@@ -63,8 +70,11 @@ async function apiPost(path, body) {
 
 async function apiPostForm(path, formData) {
   const token = getToken();
-  const sep = path.includes('?') ? '&' : '?';
-  const res = await fetch(API_BASE + path + sep + 'token=' + token, {method: 'POST', body: formData});
+  const res = await fetch(API_BASE + path, {
+    method: 'POST',
+    headers: { 'Authorization': 'Bearer ' + token },
+    body: formData,
+  });
   if (res.status === 401) { logout(); throw new Error('Session expired'); }
   if (!res.ok) throw new Error(`API error ${res.status}`);
   return res.json();

@@ -18,6 +18,7 @@ python-docx>=1.1,<2.0
 # Database
 pymongo>=4.7,<5.0
 python-dotenv>=1.0,<2.0
+bcrypt>=4.0,<5.0
 
 # AI / LLM
 openai>=1.30,<2.0

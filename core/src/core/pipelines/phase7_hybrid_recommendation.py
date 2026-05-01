@@ -88,12 +88,17 @@ def _load_ja_pivot(archive: Path) -> pd.DataFrame:
 def _load_wa_final(archive: Path) -> pd.DataFrame:
     """Job × work-activity score matrix (pivoted from long format)."""
     wa_long = pd.read_csv(archive / "workactivity_job.csv", index_col=0)
-    return wa_long.pivot_table(
-        index="Title",
-        columns="Element Name",
-        values="activity_score",
-        fill_value=0.0,
-    )
+    # Build via numpy to avoid a pandas pivot_table bug on large sparse tables.
+    titles = sorted(wa_long["Title"].unique())
+    activities = sorted(wa_long["Element Name"].unique())
+    t_codes = pd.Categorical(wa_long["Title"], categories=titles).codes
+    a_codes = pd.Categorical(wa_long["Element Name"], categories=activities).codes
+    data = np.zeros((len(titles), len(activities)), dtype=np.float64)
+    np.add.at(data, (t_codes, a_codes), wa_long["activity_score"].values)
+    result = pd.DataFrame(data, index=titles, columns=activities)
+    result.index.name = "Title"
+    result.columns.name = "Element Name"
+    return result
 
 
 def _load_atwa_matrix(archive: Path, abilities: List[str]) -> pd.DataFrame:

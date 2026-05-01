@@ -109,10 +109,14 @@ function renderJobCards(recs) {
         <div style="font-size:11px;color:#40484e;margin-bottom:0.25rem;"><span style="font-weight:600;color:#006a6a;">Strengths:</span> ${strengths}</div>
         <div style="font-size:11px;color:#40484e;"><span style="font-weight:600;color:#b45309;">Gaps:</span> ${gaps}</div>
         ${breakdownHtml}
-        <div style="margin-top:0.75rem;">
+        <div style="margin-top:0.75rem;display:flex;gap:0.75rem;flex-wrap:wrap;align-items:center;">
           <a href="/skills.html?job=${encodeURIComponent(job.job_title)}"
              style="font-size:12px;font-weight:600;color:#00425e;text-decoration:none;">
             View Skill Gap &rarr;
+          </a>
+          <a href="/interview.html?job=${encodeURIComponent(job.job_title)}"
+             style="font-size:12px;font-weight:600;color:#fff;background:#00425e;padding:0.35rem 0.75rem;border-radius:6px;text-decoration:none;white-space:nowrap;">
+            Practice Interview &rarr;
           </a>
         </div>
       </div>`;

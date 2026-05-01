@@ -80,8 +80,8 @@
       <a href="/assessments.html" class="nav-item">
         <span class="material-symbols-outlined">psychology</span>Assessments
       </a>
-      <a href="/results.html" class="nav-item">
-        <span class="material-symbols-outlined">bar_chart</span>My Results
+      <a href="/history.html" class="nav-item">
+        <span class="material-symbols-outlined">bar_chart</span>My Profile
       </a>
       <a href="/resume.html" class="nav-item">
         <span class="material-symbols-outlined">description</span>Resume
@@ -94,9 +94,6 @@
       </a>
       <a href="/skills.html" class="nav-item">
         <span class="material-symbols-outlined">auto_stories</span>Skills
-      </a>
-      <a href="/history.html" class="nav-item">
-        <span class="material-symbols-outlined">history</span>History
       </a>
     </nav>
     <div class="sidebar-footer">
@@ -129,9 +126,12 @@
       </div>
     </div>
 
-    <!-- Quick Actions -->
+    <!-- Workflow Progress (injected by dashboard.js) -->
+    <div id="workflow-progress"></div>
+
+    <!-- Quick Actions (rebuilt by dashboard.js based on user state) -->
     <span class="section-label">Quick Actions</span>
-    <div class="grid-3">
+    <div class="grid-3" id="quick-actions-grid">
       <div>
         <div style="background:#00425e;border-radius:12px;padding:1.5rem;min-height:130px;display:flex;flex-direction:column;justify-content:space-between;margin-bottom:0.5rem;">
           <span class="material-symbols-outlined" style="font-size:1.75rem;color:#c6e7ff;">psychology</span>
@@ -194,9 +194,9 @@
     <span class="section-label">Recent Activity</span>
     <div id="activity-timeline"></div>
 
-    <!-- Navigation CTAs -->
-    <span class="section-label">Continue</span>
-    <div class="grid-3">
+    <!-- Navigation CTAs (rebuilt by dashboard.js) -->
+    <span class="section-label" id="continue-label">Continue</span>
+    <div class="grid-3" id="continue-grid">
       <a href="/assessments.html" style="display:block;text-align:center;background:#eceef1;color:#191c1e;padding:0.625rem;border-radius:8px;font-weight:600;font-size:13px;">Cognitive Assessment</a>
       <a href="/resume.html" style="display:block;text-align:center;background:#eceef1;color:#191c1e;padding:0.625rem;border-radius:8px;font-weight:600;font-size:13px;">Update Resume</a>
       <a href="/skills.html" style="display:block;text-align:center;background:#eceef1;color:#191c1e;padding:0.625rem;border-radius:8px;font-weight:600;font-size:13px;">Skills &amp; Growth</a>

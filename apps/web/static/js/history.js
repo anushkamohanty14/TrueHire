@@ -1,6 +1,4 @@
-import { apiGet, getUserId, requireAuth, populateNavUser } from './api.js';
-
-requireAuth();
+// globals from api.js loaded as a regular script tag
 
 const ABILITY_LABELS = {
   deductive_reasoning:    'Deductive Reasoning',
@@ -25,7 +23,7 @@ async function loadHistory() {
   const contentEl = document.getElementById('content');
 
   try {
-    const data = await apiGet(`/api/users/history/${userId}`);
+    const data = await apiGet(`/users/history/${userId}`);
     loadingEl.style.display = 'none';
     contentEl.style.display = 'block';
     renderInsights(data);
@@ -244,9 +242,122 @@ function _esc(str) {
     .replace(/>/g, '&gt;');
 }
 
+// ── Assessment History (merged from results.js) ───────────────────────────────
+
+async function loadAssessmentHistory() {
+  const userId = getUserId();
+  const sectionLabel = document.getElementById('hist-section-label');
+  const summaryCards = document.getElementById('hist-summary-cards');
+  const container = document.getElementById('hist-container');
+
+  try {
+    const data = await apiGet(`/cognitive/history/${userId}`);
+    const attempts = data.attempts || [];
+
+    if (attempts.length === 0) {
+      // Leave section hidden — nothing to show
+      return;
+    }
+
+    // Show section label and summary cards
+    sectionLabel.style.display = 'block';
+    summaryCards.style.display = 'block';
+
+    // Latest score
+    const latest = attempts[0];
+    document.getElementById('hist-latest-score').textContent = `${Math.round(latest.readiness_score)}%`;
+
+    // Attempt count
+    document.getElementById('hist-attempt-count').textContent = attempts.length;
+
+    // Score change (first vs latest)
+    const improvEl = document.getElementById('hist-improvement-val');
+    if (attempts.length > 1) {
+      const improvement = (latest.readiness_score - attempts[attempts.length - 1].readiness_score).toFixed(1);
+      improvEl.textContent = `${improvement > 0 ? '+' : ''}${improvement}%`;
+      improvEl.style.color = improvement >= 0 ? '#1a7f5a' : '#b91c1c';
+    } else {
+      improvEl.textContent = '—';
+    }
+
+    // Collapsible attempt cards
+    container.innerHTML = '';
+    attempts.forEach((attempt, idx) => {
+      container.appendChild(_buildAttemptCard(attempt, idx));
+    });
+
+  } catch (err) {
+    // Non-fatal: assessment history is supplementary
+    if (sectionLabel) sectionLabel.style.display = 'none';
+    if (container) container.innerHTML = `<p style="color:#b91c1c;font-size:0.9rem;">Failed to load assessment history: ${err.message}</p>`;
+  }
+}
+
+function _buildAttemptCard(attempt, idx) {
+  const card = document.createElement('div');
+  card.className = 'attempt-card';
+
+  const date = new Date(attempt.taken_at);
+  const dateStr = date.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+  const timeStr = date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+
+  const score = Math.round(attempt.readiness_score);
+  const scoreClass = score >= 70 ? 'score-high' : score >= 50 ? 'score-mid' : 'score-low';
+
+  card.innerHTML = `
+    <div class="attempt-header" onclick="toggleAttempt(${idx})">
+      <div class="attempt-meta">
+        <span class="attempt-label">${idx === 0 ? '<span class="badge-latest">Latest</span> ' : ''}Attempt ${idx + 1}</span>
+        <span class="attempt-date">${dateStr} at ${timeStr}</span>
+      </div>
+      <div class="attempt-right">
+        <span class="readiness-score ${scoreClass}">${score}%</span>
+        <span class="material-symbols-outlined expand-icon" id="icon-${idx}">expand_more</span>
+      </div>
+    </div>
+    <div class="attempt-body" id="body-${idx}" style="display:none;">
+      ${_buildAbilityGrid(attempt.ability_percentiles)}
+    </div>
+  `;
+  return card;
+}
+
+function _buildAbilityGrid(percentiles) {
+  return `
+    <div class="ability-grid">
+      ${ABILITY_KEYS.map(key => {
+        const val = Math.round(percentiles[key] ?? 0);
+        const color = val >= 70 ? '#1a7f5a' : val >= 50 ? '#b45309' : '#b91c1c';
+        return `
+          <div class="ability-item">
+            <div class="ability-name" style="font-size:0.78rem;font-weight:600;color:#40484e;">${ABILITY_LABELS[key]}</div>
+            <div class="ability-bar-wrap">
+              <div class="ability-bar" style="width:${val}%;background:${color};"></div>
+            </div>
+            <div class="ability-pct" style="color:${color};">${val}<sup>th</sup></div>
+          </div>`;
+      }).join('')}
+    </div>`;
+}
+
+window.toggleAttempt = function(idx) {
+  const body = document.getElementById(`body-${idx}`);
+  const icon = document.getElementById(`icon-${idx}`);
+  if (!body || !icon) return;
+  if (body.style.display === 'none') {
+    body.style.display = 'block';
+    icon.textContent = 'expand_less';
+  } else {
+    body.style.display = 'none';
+    icon.textContent = 'expand_more';
+  }
+};
+
 // ── Boot ──────────────────────────────────────────────────────────────────────
 
 document.addEventListener('DOMContentLoaded', () => {
+  requireAuth();
   populateNavUser();
   loadHistory();
+  loadAssessmentHistory();
 });

@@ -19,10 +19,33 @@ async function uploadResume(file) {
       analyzedEl.textContent = 'ANALYZED';
       analyzedEl.style.color = '#006a6a';
     }
-    if (statusEl) statusEl.textContent = `Extracted ${(result.extracted_skills||[]).length} skills via ${result.extraction_method}`;
+    const count = (result.extracted_skills || []).length;
+    if (statusEl) statusEl.textContent = `Extracted ${count} skills via ${result.extraction_method}`;
+    showNextStepBanner(count);
   } catch (err) {
     if (statusEl) statusEl.textContent = 'Upload failed: ' + err.message;
   }
+}
+
+function showNextStepBanner(skillCount) {
+  const existing = document.getElementById('next-step-banner');
+  if (existing) existing.remove();
+  const main = document.querySelector('.main');
+  if (!main) return;
+  const banner = document.createElement('div');
+  banner.id = 'next-step-banner';
+  banner.style.cssText = 'margin-top:1.5rem;background:linear-gradient(135deg,#00425e,#006a6a);border-radius:12px;padding:1.25rem 1.5rem;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:1rem;';
+  banner.innerHTML = `
+    <div>
+      <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.15em;color:#c6e7ff;margin-bottom:0.25rem;">Resume Analysed — ${skillCount} skill${skillCount !== 1 ? 's' : ''} extracted</div>
+      <div style="font-family:Manrope,sans-serif;font-size:1rem;font-weight:700;color:#fff;">Next: Take the Cognitive Assessment</div>
+      <div style="font-size:0.8125rem;color:rgba(255,255,255,0.75);margin-top:0.2rem;">Complete all 9 ability tests to unlock personalised job matches.</div>
+    </div>
+    <a href="/assessments.html" style="background:#fff;color:#00425e;padding:0.625rem 1.25rem;border-radius:8px;font-weight:700;font-size:13px;white-space:nowrap;">
+      Start Assessment →
+    </a>
+  `;
+  main.appendChild(banner);
 }
 
 function renderExtractedSkills(skills) {

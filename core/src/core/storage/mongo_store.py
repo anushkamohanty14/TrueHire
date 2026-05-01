@@ -19,22 +19,25 @@ from pymongo.collection import Collection
 
 load_dotenv()
 
+_client: MongoClient = None
+
+def _get_client() -> MongoClient:
+    global _client
+    if _client is None:
+        uri = os.environ.get("MONGODB_URI")
+        if not uri:
+            raise EnvironmentError("MONGODB_URI is not set. Add it to your .env file.")
+        _client = MongoClient(uri)
+    return _client
 
 def _get_collection() -> Collection:
-    uri = os.environ.get("MONGODB_URI")
-    if not uri:
-        raise EnvironmentError("MONGODB_URI is not set. Add it to your .env file.")
     db_name = os.environ.get("MONGODB_DB", "career_recommender")
-    client = MongoClient(uri)
-    return client[db_name]["user_profiles"]
+    return _get_client()[db_name]["user_profiles"]
 
 
 def _get_auth_collection() -> Collection:
-    uri = os.environ.get("MONGODB_URI")
-    if not uri:
-        raise EnvironmentError("MONGODB_URI is not set. Add it to your .env file.")
     db_name = os.environ.get("MONGODB_DB", "career_recommender")
-    return MongoClient(uri)[db_name]["auth_users"]
+    return _get_client()[db_name]["auth_users"]
 
 
 class MongoUserStore:

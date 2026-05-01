@@ -16,6 +16,32 @@
     body{font-family:'Inter',sans-serif;background:#f8f9fd;color:#191c1e;min-height:100vh;}
     a{text-decoration:none;color:inherit;}
 
+    /* ── Assessment History (merged from results.html) ── */
+    .summary-cards{display:grid;grid-template-columns:repeat(3,1fr);gap:1.25rem;margin-bottom:2rem;}
+    .summary-card{background:#fff;border:1px solid #e2e8f0;border-radius:16px;padding:1.5rem;display:flex;flex-direction:column;gap:0.25rem;}
+    .summary-card-label{font-size:0.8rem;font-weight:600;color:#40484e;text-transform:uppercase;letter-spacing:0.05em;}
+    .summary-card-value{font-family:Manrope,sans-serif;font-size:2.25rem;font-weight:800;color:#00425e;}
+    .summary-card-sub{font-size:0.8rem;color:#64748b;}
+    .attempt-card{background:#fff;border:1px solid #e2e8f0;border-radius:12px;margin-bottom:0.75rem;overflow:hidden;}
+    .attempt-header{display:flex;align-items:center;justify-content:space-between;padding:1rem 1.25rem;cursor:pointer;user-select:none;transition:background 0.15s;}
+    .attempt-header:hover{background:#f8fafc;}
+    .attempt-meta{display:flex;flex-direction:column;gap:0.25rem;}
+    .attempt-label{font-family:Manrope,sans-serif;font-size:0.9rem;font-weight:700;color:#191c1e;display:flex;align-items:center;gap:0.5rem;}
+    .attempt-date{font-size:0.78rem;color:#64748b;}
+    .attempt-right{display:flex;align-items:center;gap:0.75rem;}
+    .readiness-score{font-family:Manrope,sans-serif;font-size:1.25rem;font-weight:800;}
+    .score-high{color:#1a7f5a;}
+    .score-mid{color:#b45309;}
+    .score-low{color:#b91c1c;}
+    .expand-icon{color:#40484e;font-size:1.25rem;transition:transform 0.2s;}
+    .badge-latest{background:#00425e;color:#fff;font-size:0.65rem;padding:2px 6px;border-radius:6px;font-weight:700;letter-spacing:0.03em;}
+    .attempt-body{padding:1.25rem;border-top:1px solid #eceef1;background:#fafbfc;}
+    .ability-grid{display:grid;grid-template-columns:1fr 1fr;gap:0.75rem;}
+    .ability-item{display:flex;flex-direction:column;gap:4px;}
+    .ability-bar-wrap{height:6px;background:#e2e8f0;border-radius:4px;overflow:hidden;}
+    .ability-bar{height:100%;border-radius:4px;transition:width 0.4s ease;}
+    .ability-pct{font-family:Manrope,sans-serif;font-size:0.8rem;font-weight:700;}
+
     /* Nav */
     .topnav{position:fixed;top:0;left:0;right:0;z-index:1000;background:rgba(255,255,255,0.92);backdrop-filter:blur(20px);border-bottom:1px solid rgba(192,199,206,0.3);height:64px;display:flex;align-items:center;justify-content:space-between;padding:0 1.5rem;box-shadow:0 1px 3px rgba(0,0,0,0.06);}
     .topnav-brand{font-family:Manrope,sans-serif;font-size:1.125rem;font-weight:800;color:#00425e;letter-spacing:-0.03em;}
@@ -126,8 +152,8 @@
       <a href="/assessments.html" class="nav-item">
         <span class="material-symbols-outlined">psychology</span>Assessments
       </a>
-      <a href="/results.html" class="nav-item">
-        <span class="material-symbols-outlined">bar_chart</span>My Results
+      <a href="/history.html" class="nav-item active">
+        <span class="material-symbols-outlined">bar_chart</span>My Profile
       </a>
       <a href="/resume.html" class="nav-item">
         <span class="material-symbols-outlined">description</span>Resume
@@ -141,9 +167,6 @@
       <a href="/skills.html" class="nav-item">
         <span class="material-symbols-outlined">auto_stories</span>Skills
       </a>
-      <a href="/history.html" class="nav-item active">
-        <span class="material-symbols-outlined">history</span>History
-      </a>
     </nav>
     <div class="sidebar-footer">
       <a href="#"><span class="material-symbols-outlined">settings</span>Settings</a>
@@ -154,8 +177,8 @@
   <!-- Main -->
   <main class="main">
     <div class="page-header">
-      <h1 class="page-title">My History</h1>
-      <p class="page-subtitle">Your latest cognitive assessment and resume profile — used to personalise your interview simulation.</p>
+      <h1 class="page-title">My Profile</h1>
+      <p class="page-subtitle">Your latest cognitive assessment, resume profile, and full assessment history.</p>
     </div>
 
     <!-- Loading state -->
@@ -282,6 +305,33 @@
         </div>
       </div>
 
+      <!-- Assessment History section (populated by loadAssessmentHistory) -->
+      <span class="section-label" id="hist-section-label" style="display:none;">Assessment History</span>
+
+      <!-- Summary cards -->
+      <div id="hist-summary-cards" style="display:none;">
+        <div class="summary-cards">
+          <div class="summary-card">
+            <div class="summary-card-label">Latest Readiness Score</div>
+            <div class="summary-card-value" id="hist-latest-score">—</div>
+            <div class="summary-card-sub">Overall cognitive readiness</div>
+          </div>
+          <div class="summary-card">
+            <div class="summary-card-label">Attempts Taken</div>
+            <div class="summary-card-value" id="hist-attempt-count">—</div>
+            <div class="summary-card-sub">Total assessments completed</div>
+          </div>
+          <div class="summary-card">
+            <div class="summary-card-label">Score Change</div>
+            <div class="summary-card-value" id="hist-improvement-val">—</div>
+            <div class="summary-card-sub">First vs. latest attempt</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Collapsible attempt cards -->
+      <div id="hist-container"></div>
+
       <!-- Interview readiness banner -->
       <span class="section-label" id="readiness-section-label" style="display:none;">Interview Readiness</span>
       <div class="card" id="readiness-banner" style="display:none;">
@@ -303,7 +353,7 @@
   </main>
 
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
-  <script type="module" src="./js/api.js"></script>
-  <script type="module" src="./js/history.js"></script>
+  <script src="/js/api.js"></script>
+  <script src="/js/history.js"></script>
 </body>
 </html>

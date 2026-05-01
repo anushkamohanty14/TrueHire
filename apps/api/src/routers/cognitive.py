@@ -10,11 +10,12 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[5]))
 from statistics import mean
 from typing import Any, Dict, List
 
-from fastapi import APIRouter, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Query
+from ..dependencies import require_token
 from pydantic import BaseModel
 
 from core.src.core.scoring import ScoringEngine
-from core.src.core.storage.mongo_store import MongoUserStore
+from core.src.core.storage.mongo_store import MongoUserStore, _get_auth_collection
 from core.src.core.tasks import (
     DigitSpanGenerator,
     MathReasoningGenerator,
@@ -84,10 +85,14 @@ def get_tasks(token: str = "") -> List[Dict[str, Any]]:
 
 
 @router.post("/assess")
-def assess(payload: AssessRequest, token: str = "") -> Dict[str, Any]:
+def assess(payload: AssessRequest, token: str = Depends(require_token)) -> Dict[str, Any]:
     """Score user responses and persist to MongoDB."""
     if not payload.responses:
         raise HTTPException(status_code=400, detail="No responses provided")
+
+    auth_col = _get_auth_collection()
+    if not auth_col.find_one({"token": token}):
+        raise HTTPException(status_code=401, detail="Invalid or expired token")
 
     # Build minimal TaskResponse objects
     task_responses: List[TaskResponse] = []

@@ -19,6 +19,8 @@ function showLoading(msg) {
 }
 
 async function loadJobOptions() {
+  const preselect = new URLSearchParams(window.location.search).get('job');
+
   try {
     const data = await apiGet(`/recommendations/${getUserId()}?limit=5`);
     const select = document.getElementById('job-select');
@@ -26,19 +28,58 @@ async function loadJobOptions() {
     select.innerHTML = '<option value="">Select a role...</option>';
 
     const jobs = (data.recommendations || data).slice(0, 5);
+    const jobTitles = new Set(jobs.map(j => j.job_title));
+
+    // If the URL-supplied job isn't in the top-5, add it so it can be pre-selected
+    if (preselect && !jobTitles.has(preselect)) {
+      const opt = document.createElement('option');
+      opt.value = preselect;
+      opt.textContent = preselect;
+      select.appendChild(opt);
+    }
+
     jobs.forEach(job => {
       const opt = document.createElement('option');
       opt.value = job.job_title;
       opt.textContent = job.job_title;
       select.appendChild(opt);
     });
+
+    if (preselect) {
+      select.value = preselect;
+      showPreselectBanner(preselect);
+    }
   } catch {
     const select = document.getElementById('job-select');
     if (select) {
       select.innerHTML =
         '<option value="Software Developers">Software Developers</option><option value="Data Scientists">Data Scientists</option>';
+      if (preselect) {
+        const opt = document.createElement('option');
+        opt.value = preselect;
+        opt.textContent = preselect;
+        select.insertBefore(opt, select.firstChild);
+        select.value = preselect;
+        showPreselectBanner(preselect);
+      }
     }
   }
+}
+
+function showPreselectBanner(job) {
+  const screen = document.getElementById('screen-setup');
+  if (!screen || document.getElementById('preselect-banner')) return;
+  const banner = document.createElement('div');
+  banner.id = 'preselect-banner';
+  banner.style.cssText = 'background:#c6e7ff;border:1px solid #00425e;border-radius:10px;padding:0.75rem 1rem;margin-bottom:1rem;display:flex;align-items:center;gap:0.75rem;';
+  banner.innerHTML = `
+    <span class="material-symbols-outlined" style="color:#00425e;font-size:1.25rem;">work_outline</span>
+    <div>
+      <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:#00425e;">Ready to practise</div>
+      <div style="font-size:0.875rem;font-weight:600;color:#191c1e;">${job}</div>
+    </div>
+  `;
+  screen.insertBefore(banner, screen.firstChild);
 }
 
 function bindModeButtons() {

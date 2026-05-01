@@ -59,9 +59,17 @@ def build_tech_matrix(csv_path: str = _DEFAULT_CSV) -> pd.DataFrame:
     # Aggregate duplicates (same job + same tech) by summing weights
     agg = df.groupby(["Title", "Example"])["weight"].sum().reset_index()
 
-    # Pivot to job × skill matrix
-    matrix = agg.pivot_table(index="Title", columns="Example",
-                              values="weight", fill_value=0.0)
+    # Build job × skill matrix via numpy to avoid a pandas pivot_table bug
+    # that produces duplicate index entries on large sparse tables.
+    titles = sorted(agg["Title"].unique())
+    examples = sorted(agg["Example"].unique())
+    t_codes = pd.Categorical(agg["Title"], categories=titles).codes
+    e_codes = pd.Categorical(agg["Example"], categories=examples).codes
+    data = np.zeros((len(titles), len(examples)), dtype=np.float64)
+    np.add.at(data, (t_codes, e_codes), agg["weight"].values)
+    matrix = pd.DataFrame(data, index=titles, columns=examples)
+    matrix.index.name = "Title"
+    matrix.columns.name = "Example"
 
     # Normalise per job so total weight = 1
     row_sums = matrix.sum(axis=1).replace(0, 1)

@@ -16,6 +16,14 @@ from core.src.core.industry_clusters import classify_title
 
 router = APIRouter(prefix="/api/recommendations", tags=["recommendations"])
 
+_recommender: HybridRecommender = None
+
+def _get_recommender() -> HybridRecommender:
+    global _recommender
+    if _recommender is None:
+        _recommender = HybridRecommender()
+    return _recommender
+
 
 @router.get("/{user_id}")
 def get_recommendations(
@@ -44,7 +52,7 @@ def get_recommendations(
             detail="No ability scores found. Complete the cognitive assessment first.",
         )
 
-    rec = HybridRecommender()
+    rec = _get_recommender()
 
     # Filter job set to the requested industry before scoring
     job_filter: Optional[List[str]] = None

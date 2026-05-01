@@ -1,11 +1,14 @@
 import uuid
+import os
 from datetime import datetime, timezone
 from typing import Any, Dict
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, Depends, HTTPException
+from ..dependencies import require_token
 from pydantic import BaseModel
+from pymongo import MongoClient
 
-from core.src.core.pipelines.phase13_interview import (
+from core.src.core.pipelines.phase8_interview import (
     evaluate_answer,
     generate_behavioral_questions,
     generate_session_summary,
@@ -30,17 +33,24 @@ class RespondRequest(BaseModel):
     answer: str
 
 
-def _sessions_col():
-    import os
-    from pymongo import MongoClient
+_mongo: MongoClient = None
 
-    uri = os.environ.get("MONGODB_URI")
+def _get_mongo_client():
+    global _mongo
+    if _mongo is None:
+        from dotenv import load_dotenv
+        load_dotenv()
+        uri = os.environ.get("MONGODB_URI")
+        _mongo = MongoClient(uri)
+    return _mongo
+
+def _sessions_col():
     db_name = os.environ.get("MONGODB_DB", "career_recommender")
-    return MongoClient(uri)[db_name]["interview_sessions"]
+    return _get_mongo_client()[db_name]["interview_sessions"]
 
 
 @router.post("/start")
-def start_interview(payload: StartRequest, token: str = "") -> Dict[str, Any]:
+def start_interview(payload: StartRequest, token: str = Depends(require_token)) -> Dict[str, Any]:
     auth_col = _get_auth_collection()
     user_doc = auth_col.find_one({"token": token})
     if not user_doc:
@@ -114,7 +124,7 @@ def start_interview(payload: StartRequest, token: str = "") -> Dict[str, Any]:
 
 
 @router.post("/respond")
-def respond(payload: RespondRequest, token: str = "") -> Dict[str, Any]:
+def respond(payload: RespondRequest, token: str = Depends(require_token)) -> Dict[str, Any]:
     auth_col = _get_auth_collection()
     user_doc = auth_col.find_one({"token": token})
     if not user_doc:
@@ -168,7 +178,7 @@ def respond(payload: RespondRequest, token: str = "") -> Dict[str, Any]:
 
 
 @router.get("/summary/{session_id}")
-def get_summary(session_id: str, token: str = "") -> Dict[str, Any]:
+def get_summary(session_id: str, token: str = Depends(require_token)) -> Dict[str, Any]:
     auth_col = _get_auth_collection()
     user_doc = auth_col.find_one({"token": token})
     if not user_doc:
@@ -193,7 +203,7 @@ def get_summary(session_id: str, token: str = "") -> Dict[str, Any]:
 
 
 @router.get("/history")
-def get_history(token: str = "") -> Dict[str, Any]:
+def get_history(token: str = Depends(require_token)) -> Dict[str, Any]:
     auth_col = _get_auth_collection()
     user_doc = auth_col.find_one({"token": token})
     if not user_doc:
